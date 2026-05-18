@@ -1,0 +1,1022 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Observatorio Territorial del Norte Santafesino</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600&family=Source+Sans+3:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --verde: #1a3d2b;
+      --verde-medio: #2d6a4f;
+      --dorado: #c8a84b;
+      --fondo: #f4f0e8;
+      --blanco: #ffffff;
+      --texto: #1a1a1a;
+      --texto-suave: #666;
+      --borde: rgba(0,0,0,0.1);
+      --radio: 10px;
+    }
+
+    body {
+      font-family: 'Source Sans 3', sans-serif;
+      background: var(--fondo);
+      color: var(--texto);
+      min-height: 100vh;
+    }
+
+    /* ── HEADER ── */
+    .header {
+      background: var(--verde);
+      border-bottom: 3px solid var(--dorado);
+      padding: 0 1.5rem;
+      height: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 200;
+    }
+
+    .logo { display: flex; align-items: center; gap: 12px; }
+    .logo-ico {
+      width: 36px; height: 36px;
+      background: var(--dorado);
+      border-radius: 7px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 15px; font-weight: 700; color: var(--verde);
+    }
+    .logo-nombre {
+      font-family: 'Playfair Display', serif;
+      font-size: 14px; font-weight: 600; color: #f0ead8; line-height: 1.2;
+    }
+    .logo-sub { font-size: 9px; color: var(--dorado); letter-spacing: .07em; text-transform: uppercase; }
+
+    .header-badge {
+      background: rgba(200,168,75,.2);
+      border: 1px solid rgba(200,168,75,.35);
+      border-radius: 14px; padding: 4px 12px;
+      font-size: 10px; color: var(--dorado); font-weight: 500;
+    }
+
+    /* ── HERO ── */
+    .hero {
+      background: linear-gradient(135deg, #1a3d2b 0%, #2d5e42 60%, #3a7a55 100%);
+      padding: 2.5rem 1.5rem 2rem;
+      border-bottom: 2px solid var(--dorado);
+    }
+    .hero-eyebrow {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: rgba(200,168,75,.2); border: 1px solid rgba(200,168,75,.4);
+      border-radius: 20px; padding: 4px 12px;
+      font-size: 10px; color: var(--dorado); font-weight: 500;
+      margin-bottom: 1rem; letter-spacing: .06em; text-transform: uppercase;
+    }
+    .hero h1 {
+      font-family: 'Playfair Display', serif;
+      font-size: 28px; font-weight: 600; color: #f0ead8; line-height: 1.2; margin-bottom: .5rem;
+    }
+    .hero p { font-size: 14px; color: #a8c4b0; line-height: 1.6; max-width: 560px; margin-bottom: 1.5rem; }
+    .hero-stats { display: flex; gap: 2rem; flex-wrap: wrap; }
+    .hstat { display: flex; flex-direction: column; }
+    .hstat-v { font-family: 'Playfair Display', serif; font-size: 22px; font-weight: 500; color: var(--dorado); }
+    .hstat-l { font-size: 10px; color: #88a890; text-transform: uppercase; letter-spacing: .06em; }
+
+    /* ── ALERTA FANTASMA ── */
+    .alerta-fantasma {
+      background: #FAEEDA; border: 1px solid #EF9F27;
+      border-radius: 8px; padding: .875rem 1.25rem;
+      font-size: 13px; color: #633806;
+      margin: 1.25rem 1.5rem 0;
+      display: flex; align-items: center; gap: 10px;
+    }
+
+    /* ── GRILLA DE EJES ── */
+    #pantalla-home { display: block; }
+    .ejes-titulo {
+      padding: 1.5rem 1.5rem .75rem;
+      font-family: 'Playfair Display', serif;
+      font-size: 18px; font-weight: 500; color: var(--texto);
+    }
+    .ejes-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+      gap: .875rem;
+      padding: 0 1.5rem 1.5rem;
+    }
+    .eje-card {
+      background: var(--blanco);
+      border: 1px solid var(--borde);
+      border-radius: var(--radio);
+      padding: 1rem;
+      cursor: pointer;
+      transition: border-color .15s, box-shadow .15s;
+      display: flex; flex-direction: column; gap: 8px;
+    }
+    .eje-card:hover { border-color: var(--verde); box-shadow: 0 0 0 3px rgba(26,61,43,.08); }
+    .eje-ico {
+      width: 38px; height: 38px; border-radius: 9px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 19px;
+    }
+    .eje-num { font-size: 9px; font-weight: 600; text-transform: uppercase; letter-spacing: .06em; color: var(--texto-suave); }
+    .eje-nombre { font-size: 12px; font-weight: 500; color: var(--texto); line-height: 1.3; }
+    .pill {
+      display: inline-block; padding: 2px 8px; border-radius: 10px;
+      font-size: 10px; font-weight: 500;
+    }
+    .pill-azul { background: #E6F1FB; color: #0C447C; }
+    .pill-verde { background: #EAF3DE; color: #27500A; }
+    .pill-gris { background: #F1EFE8; color: #444441; }
+
+    /* ── PANTALLA DE EJE ── */
+    #pantalla-eje { display: none; }
+    .eje-header {
+      background: var(--blanco);
+      border-bottom: 1px solid var(--borde);
+      padding: 1rem 1.5rem;
+      display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem;
+    }
+    .eje-header-titulo {
+      font-family: 'Playfair Display', serif;
+      font-size: 20px; font-weight: 500; color: var(--texto);
+    }
+    .eje-header-desc { font-size: 13px; color: var(--texto-suave); margin-top: 3px; line-height: 1.5; }
+    .btn-volver {
+      display: flex; align-items: center; gap: 5px;
+      padding: 7px 14px;
+      background: var(--fondo); border: 1px solid var(--borde);
+      border-radius: 7px; font-size: 12px; color: var(--texto-suave);
+      cursor: pointer; white-space: nowrap; flex-shrink: 0;
+      font-family: 'Source Sans 3', sans-serif;
+      transition: background .15s;
+    }
+    .btn-volver:hover { background: #e8e4dc; }
+
+    /* ── TABS ── */
+    .tabs {
+      display: flex; gap: 0;
+      border-bottom: 1px solid var(--borde);
+      background: var(--blanco);
+      padding: 0 1.5rem;
+      overflow-x: auto;
+    }
+    .tab-btn {
+      padding: 10px 16px; font-size: 13px; font-weight: 500;
+      cursor: pointer; border-bottom: 2px solid transparent;
+      color: var(--texto-suave); white-space: nowrap;
+      font-family: 'Source Sans 3', sans-serif;
+      background: none; border-top: none; border-left: none; border-right: none;
+      transition: color .15s, border-color .15s;
+    }
+    .tab-btn:hover { color: var(--texto); }
+    .tab-btn.active { color: var(--verde); border-bottom-color: var(--dorado); }
+
+    .tab-content { display: none; padding: 1.25rem 1.5rem; }
+    .tab-content.visible { display: block; }
+
+    /* ── COMPONENTES ── */
+    .card {
+      background: var(--blanco); border: 1px solid var(--borde);
+      border-radius: var(--radio); padding: 1rem 1.25rem; margin-bottom: 1rem;
+    }
+    .card-title {
+      font-size: 13px; font-weight: 500; color: var(--texto);
+      margin-bottom: .875rem; display: flex; align-items: center; gap: 7px;
+    }
+    .grid2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1rem; margin-bottom: 1rem; }
+    .grid3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: .75rem; margin-bottom: 1rem; }
+    .grid4 { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: .75rem; margin-bottom: 1rem; }
+    .metric {
+      background: #f9f7f2; border-radius: 8px; padding: .875rem 1rem;
+    }
+    .metric-lbl { font-size: 10px; text-transform: uppercase; letter-spacing: .06em; color: var(--texto-suave); margin-bottom: 4px; }
+    .metric-val { font-size: 22px; font-weight: 500; color: var(--texto); }
+    .metric-unit { font-size: 11px; color: var(--texto-suave); margin-top: 2px; }
+    .metric-delta { font-size: 11px; margin-top: 3px; }
+    .delta-up { color: #0F6E56; } .delta-dn { color: #993C1D; }
+
+    .info-box {
+      background: #f9f7f2; border-radius: 8px; padding: .875rem 1rem;
+      font-size: 13px; color: var(--texto-suave); line-height: 1.6;
+      margin-bottom: 1rem;
+    }
+    .info-box strong { color: var(--texto); font-weight: 500; }
+    .info-azul { background: #E6F1FB; border: 1px solid #B5D4F4; border-radius: 8px; padding: .75rem 1rem; font-size: 12px; color: #0C447C; margin-bottom: 1rem; display: flex; gap: 8px; align-items: flex-start; }
+
+    .tbl { width: 100%; border-collapse: collapse; font-size: 12px; }
+    .tbl th { text-align: left; padding: 6px 8px; font-weight: 500; font-size: 10px; text-transform: uppercase; letter-spacing: .05em; color: var(--texto-suave); border-bottom: 1px solid var(--borde); }
+    .tbl td { padding: 7px 8px; border-bottom: 1px solid var(--borde); }
+    .tbl tr:last-child td { border-bottom: none; }
+
+    .escala-btns { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 1rem; }
+    .escala-btn {
+      padding: 5px 12px; border-radius: 20px; font-size: 11px; font-weight: 500;
+      border: 1px solid var(--borde); cursor: pointer;
+      background: var(--blanco); color: var(--texto-suave);
+      font-family: 'Source Sans 3', sans-serif; transition: all .15s;
+    }
+    .escala-btn.active { background: var(--verde); color: var(--dorado); border-color: var(--verde); }
+
+    .map-ph {
+      background: #dce8dc; border: 1px solid var(--borde);
+      border-radius: var(--radio); padding: 2.5rem 1.5rem;
+      display: flex; flex-direction: column; align-items: center;
+      justify-content: center; gap: .75rem; text-align: center;
+      min-height: 200px; margin-bottom: 1rem;
+    }
+    .map-ph-ico {
+      width: 48px; height: 48px; background: rgba(26,61,43,.12);
+      border-radius: 50%; display: flex; align-items: center;
+      justify-content: center; font-size: 22px; color: var(--verde);
+    }
+    .map-ph-title { font-size: 14px; font-weight: 500; color: var(--verde); }
+    .map-ph-desc { font-size: 12px; color: #4a7a5a; max-width: 360px; line-height: 1.5; }
+    .map-ph-tag {
+      display: inline-flex; align-items: center; gap: 5px;
+      background: rgba(26,61,43,.1); border-radius: 12px;
+      padding: 4px 10px; font-size: 11px; color: var(--verde); font-weight: 500;
+    }
+
+    .btn-accion {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 8px 16px; border-radius: 7px;
+      background: var(--blanco); border: 1px solid var(--borde);
+      font-size: 13px; color: var(--texto); cursor: pointer;
+      font-family: 'Source Sans 3', sans-serif; transition: background .15s;
+      margin-right: 8px; margin-bottom: 8px;
+    }
+    .btn-accion:hover { background: var(--fondo); }
+    .btn-accion.primario { background: var(--verde); color: var(--dorado); border-color: var(--verde); }
+    .btn-accion.primario:hover { background: #153325; }
+
+    /* ── MAPA ── */
+    #mapa-leaflet { width: 100%; height: 420px; border-radius: var(--radio); overflow: hidden; margin-bottom: 1rem; }
+    .mapa-controles { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: .75rem; }
+    .mapa-layer-btn {
+      display: flex; align-items: center; gap: 5px;
+      padding: 5px 12px; border-radius: 16px; font-size: 11px; font-weight: 500;
+      border: 1px solid var(--borde); cursor: pointer;
+      background: var(--blanco); color: var(--texto-suave);
+      font-family: 'Source Sans 3', sans-serif; transition: all .15s;
+    }
+    .mapa-layer-btn.active { background: var(--verde); color: var(--dorado); border-color: var(--verde); }
+    .layer-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+    .zoom-btns { display: flex; gap: 5px; flex-wrap: wrap; margin-bottom: .75rem; }
+    .zoom-btn {
+      padding: 5px 12px; border-radius: 20px; font-size: 11px; font-weight: 500;
+      border: 1px solid rgba(200,168,75,.4); cursor: pointer;
+      background: var(--verde); color: #c8c8b0;
+      font-family: 'Source Sans 3', sans-serif; transition: all .15s;
+    }
+    .zoom-btn:hover { color: #f0ead8; background: #153325; }
+    .zoom-btn.active { color: var(--dorado); border-color: var(--dorado); }
+
+    /* ── PRECIOS ── */
+    .serie-btns { display: flex; gap: 5px; flex-wrap: wrap; margin-bottom: .75rem; }
+    .serie-btn {
+      padding: 5px 12px; border-radius: 20px; font-size: 11px; font-weight: 500;
+      border: 1px solid var(--borde); cursor: pointer;
+      background: var(--blanco); color: var(--texto-suave);
+      font-family: 'Source Sans 3', sans-serif; transition: all .15s;
+    }
+    .serie-btn.active { background: var(--verde); color: var(--dorado); border-color: var(--verde); }
+    .pr-select {
+      font-size: 13px; padding: 6px 12px; border-radius: 8px;
+      border: 1px solid var(--borde); background: var(--blanco);
+      color: var(--texto); font-family: 'Source Sans 3', sans-serif;
+    }
+    .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px,1fr)); gap: 8px; margin-bottom: 10px; }
+    .form-field { display: flex; flex-direction: column; gap: 4px; }
+    .form-label { font-size: 10px; color: var(--texto-suave); text-transform: uppercase; letter-spacing: .05em; }
+    input[type="number"], input[type="month"] {
+      padding: 7px 10px; border-radius: 7px; border: 1px solid var(--borde);
+      font-size: 13px; font-family: 'Source Sans 3', sans-serif;
+      background: var(--blanco); color: var(--texto); width: 100%;
+    }
+    .ok-msg { font-size: 11px; color: #0F6E56; margin-top: 6px; display: none; }
+    .legend-row { display: flex; flex-wrap: wrap; gap: 14px; margin-bottom: 10px; font-size: 12px; color: var(--texto-suave); }
+    .legend-item { display: flex; align-items: center; gap: 5px; }
+    .legend-sq { width: 10px; height: 10px; border-radius: 2px; }
+    .tag-ej { display: inline-block; padding: 1px 6px; border-radius: 8px; font-size: 10px; font-weight: 500; background: #FAEEDA; color: #633806; }
+
+    /* ── FOOTER ── */
+    .footer {
+      background: var(--verde); padding: .875rem 1.5rem;
+      display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px;
+      margin-top: 2rem;
+    }
+    .footer-txt { font-size: 10px; color: #7a9a82; }
+    .footer-logos { display: flex; gap: 8px; }
+    .footer-logo {
+      font-size: 9px; font-weight: 500; color: var(--dorado);
+      background: rgba(200,168,75,.15); border-radius: 4px;
+      padding: 3px 8px; text-transform: uppercase; letter-spacing: .04em;
+    }
+
+    .leaflet-popup-content-wrapper { border-radius: 10px !important; font-family: 'Source Sans 3', sans-serif !important; }
+    .leaflet-popup-content { margin: 10px 12px !important; font-size: 12px !important; }
+    .pu-title { font-size: 14px; font-weight: 600; color: var(--verde); margin-bottom: 5px; padding-bottom: 5px; border-bottom: 1px solid #e0dbd0; }
+    .pu-row { display: flex; justify-content: space-between; padding: 2px 0; gap: 8px; }
+    .pu-k { color: #888; } .pu-v { font-weight: 500; }
+
+    @media (max-width: 600px) {
+      .header { padding: 0 .75rem; }
+      .logo-nombre { font-size: 11px; }
+      .hero { padding: 1.5rem .75rem 1.25rem; }
+      .hero h1 { font-size: 20px; }
+      .ejes-grid { padding: 0 .75rem 1rem; grid-template-columns: repeat(auto-fill, minmax(140px,1fr)); }
+      .tab-content { padding: 1rem .75rem; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="header">
+  <div class="logo">
+    <div class="logo-ico">OT</div>
+    <div>
+      <div class="logo-nombre">Observatorio Territorial del Norte Santafesino</div>
+      <div class="logo-sub">INTA EEA Reconquista · UTN FRRq</div>
+    </div>
+  </div>
+  <div class="header-badge">⚙ Versión preliminar</div>
+</div>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-eyebrow">★ Portal Digital — Visualizador de datos territoriales</div>
+  <h1>Norte Santafesino<br>en datos</h1>
+  <p>Sistema de información territorial para los departamentos de 9 de Julio, Vera, General Obligado y San Javier. Seleccioná uno de los diez ejes temáticos para explorar.</p>
+  <div class="hero-stats">
+    <div class="hstat"><span class="hstat-v">10</span><span class="hstat-l">Ejes temáticos</span></div>
+    <div class="hstat"><span class="hstat-v">4</span><span class="hstat-l">Departamentos</span></div>
+    <div class="hstat"><span class="hstat-v">52</span><span class="hstat-l">Distritos</span></div>
+    <div class="hstat"><span class="hstat-v">3</span><span class="hstat-l">Escalas espaciales</span></div>
+  </div>
+</div>
+
+<!-- PANTALLA HOME -->
+<div id="pantalla-home">
+  <div class="alerta-fantasma">
+    ⚠ Plataforma en construcción. Los datos mostrados son de ejemplo y serán reemplazados por información real a medida que avance el proyecto.
+  </div>
+  <div class="ejes-titulo">Seleccioná un eje temático</div>
+  <div class="ejes-grid">
+    <div class="eje-card" onclick="abrirEje('poblacion')">
+      <div class="eje-ico" style="background:#E6F1FB;color:#185FA5;">👥</div>
+      <div class="eje-num">Eje 1</div>
+      <div class="eje-nombre">Población, Demografía y Ciudades</div>
+      <span class="pill pill-azul">En desarrollo</span>
+    </div>
+    <div class="eje-card" onclick="abrirEje('infra')">
+      <div class="eje-ico" style="background:#EAF3DE;color:#3B6D11;">🏫</div>
+      <div class="eje-num">Eje 2</div>
+      <div class="eje-nombre">Infraestructura Social Básica</div>
+      <span class="pill pill-azul">En desarrollo</span>
+    </div>
+    <div class="eje-card" onclick="abrirEje('suelos')">
+      <div class="eje-ico" style="background:#FAEEDA;color:#854F0B;">🗺</div>
+      <div class="eje-num">Eje 3</div>
+      <div class="eje-nombre">Suelos</div>
+      <span class="pill pill-azul">En desarrollo</span>
+    </div>
+    <div class="eje-card" onclick="abrirEje('clima')">
+      <div class="eje-ico" style="background:#E1F5EE;color:#0F6E56;">🌧</div>
+      <div class="eje-num">Eje 4</div>
+      <div class="eje-nombre">Clima y Red Agrometeorológica</div>
+      <span class="pill pill-azul">En desarrollo</span>
+    </div>
+    <div class="eje-card" onclick="abrirEje('bosques')">
+      <div class="eje-ico" style="background:#EAF3DE;color:#27500A;">🌳</div>
+      <div class="eje-num">Eje 5</div>
+      <div class="eje-nombre">Pastizales, Bosques Nativos e Islas</div>
+      <span class="pill pill-azul">En desarrollo</span>
+    </div>
+    <div class="eje-card" onclick="abrirEje('sistemas')">
+      <div class="eje-ico" style="background:#FAECE7;color:#993C1D;">🚜</div>
+      <div class="eje-num">Eje 6</div>
+      <div class="eje-nombre">Sistemas Productivos Predominantes</div>
+      <span class="pill pill-azul">En desarrollo</span>
+    </div>
+    <div class="eje-card" onclick="abrirEje('satelital')">
+      <div class="eje-ico" style="background:#EEEDFE;color:#534AB7;">🛰</div>
+      <div class="eje-num">Eje 7</div>
+      <div class="eje-nombre">Red de Monitoreo Satelital</div>
+      <span class="pill pill-azul">En desarrollo</span>
+    </div>
+    <div class="eje-card" onclick="abrirEje('ganaderia')">
+      <div class="eje-ico" style="background:#FAEEDA;color:#633806;">🐄</div>
+      <div class="eje-num">Eje 8</div>
+      <div class="eje-nombre">Existencias Ganaderas</div>
+      <span class="pill pill-azul">En desarrollo</span>
+    </div>
+    <div class="eje-card" onclick="abrirEje('mercados')">
+      <div class="eje-ico" style="background:#E6F1FB;color:#0C447C;">📈</div>
+      <div class="eje-num">Eje 9</div>
+      <div class="eje-nombre">Mercados de Productos Agropecuarios</div>
+      <span class="pill pill-verde">Activo</span>
+    </div>
+    <div class="eje-card" onclick="abrirEje('otros')">
+      <div class="eje-ico" style="background:#F1EFE8;color:#5F5E5A;">⋯</div>
+      <div class="eje-num">Eje 10</div>
+      <div class="eje-nombre">Otros Temas</div>
+      <span class="pill pill-gris">Por definir</span>
+    </div>
+  </div>
+</div>
+
+<!-- PANTALLA DE EJE -->
+<div id="pantalla-eje">
+  <div class="eje-header">
+    <div>
+      <div class="eje-header-titulo" id="eje-titulo"></div>
+      <div class="eje-header-desc" id="eje-desc"></div>
+    </div>
+    <button class="btn-volver" onclick="volverHome()">← Volver</button>
+  </div>
+  <div class="tabs" id="tabs-container"></div>
+  <div id="tabs-body"></div>
+</div>
+
+<!-- FOOTER -->
+<div class="footer">
+  <span class="footer-txt">© 2025 Observatorio Territorial del Norte Santafesino · Plataforma en construcción · Datos de ejemplo</span>
+  <div class="footer-logos">
+    <span class="footer-logo">INTA EEA Reconquista</span>
+    <span class="footer-logo">UTN FRRq</span>
+  </div>
+</div>
+
+<!-- SCRIPTS -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script>
+
+// ══════════════════════════════════════════════════
+// NAVEGACIÓN
+// ══════════════════════════════════════════════════
+let ejeActivo = null;
+let tabActiva = 0;
+
+function abrirEje(id) {
+  ejeActivo = id;
+  document.getElementById('pantalla-home').style.display = 'none';
+  document.getElementById('pantalla-eje').style.display = 'block';
+  const cfg = EJES[id];
+  document.getElementById('eje-titulo').textContent = cfg.titulo;
+  document.getElementById('eje-desc').textContent = cfg.desc;
+  renderTabs(cfg);
+  window.scrollTo(0, 0);
+}
+
+function volverHome() {
+  document.getElementById('pantalla-home').style.display = 'block';
+  document.getElementById('pantalla-eje').style.display = 'none';
+  if (leafletMap) { leafletMap.remove(); leafletMap = null; }
+  if (preciosChart) { preciosChart.destroy(); preciosChart = null; }
+  ejeActivo = null;
+}
+
+function renderTabs(cfg) {
+  tabActiva = 0;
+  const container = document.getElementById('tabs-container');
+  const body = document.getElementById('tabs-body');
+  container.innerHTML = cfg.tabs.map((t, i) =>
+    `<button class="tab-btn ${i===0?'active':''}" onclick="cambiarTab(${i})">${t.label}</button>`
+  ).join('');
+  body.innerHTML = cfg.tabs.map((t, i) =>
+    `<div class="tab-content ${i===0?'visible':''}" id="tab-${i}">${t.html}</div>`
+  ).join('');
+  if (cfg.onInit) setTimeout(cfg.onInit, 100);
+}
+
+function cambiarTab(i) {
+  tabActiva = i;
+  document.querySelectorAll('.tab-btn').forEach((b,j) => b.classList.toggle('active', j===i));
+  document.querySelectorAll('.tab-content').forEach((c,j) => c.classList.toggle('visible', j===i));
+  const cfg = EJES[ejeActivo];
+  if (cfg.onTab) setTimeout(() => cfg.onTab(i), 50);
+}
+
+// ══════════════════════════════════════════════════
+// MAPA LEAFLET
+// ══════════════════════════════════════════════════
+let leafletMap = null;
+
+const DEPTO_GEO = {
+  type:'FeatureCollection', features:[
+    { type:'Feature', properties:{ nombre:'9 de Julio', cabecera:'Tostado', sup:'14.216 km²', pob:'~51.000', dist:13, act:'Ganadería, agricultura', col:'#2d6a4f' },
+      geometry:{ type:'Polygon', coordinates:[[[-62.35,-28.00],[-61.10,-28.00],[-61.10,-28.45],[-60.80,-28.45],[-60.80,-29.30],[-61.00,-29.80],[-61.00,-30.20],[-62.35,-30.20],[-62.35,-28.00]]] }},
+    { type:'Feature', properties:{ nombre:'Vera', cabecera:'Vera', sup:'21.096 km²', pob:'~81.000', dist:15, act:'Ganadería, soja, algodón', col:'#1a5e40' },
+      geometry:{ type:'Polygon', coordinates:[[[-61.10,-28.00],[-59.65,-28.00],[-59.65,-28.40],[-59.40,-28.65],[-59.40,-29.10],[-59.65,-29.40],[-59.65,-30.20],[-61.00,-30.20],[-61.00,-29.80],[-60.80,-29.30],[-60.80,-28.45],[-61.10,-28.45],[-61.10,-28.00]]] }},
+    { type:'Feature', properties:{ nombre:'General Obligado', cabecera:'Reconquista', sup:'11.628 km²', pob:'197.986', dist:16, act:'Soja, ganadería, algodón', col:'#155232' },
+      geometry:{ type:'Polygon', coordinates:[[[-59.65,-28.00],[-59.00,-28.00],[-58.20,-27.50],[-57.90,-27.85],[-57.90,-28.60],[-58.10,-28.90],[-58.50,-29.10],[-59.40,-29.10],[-59.40,-28.65],[-59.65,-28.40],[-59.65,-28.00]]] }},
+    { type:'Feature', properties:{ nombre:'San Javier', cabecera:'San Javier', sup:'4.826 km²', pob:'~21.400', dist:8, act:'Ganadería, arroz, pesca', col:'#0f4526' },
+      geometry:{ type:'Polygon', coordinates:[[[-59.65,-29.40],[-59.40,-29.10],[-58.50,-29.10],[-58.10,-28.90],[-58.00,-29.20],[-58.00,-30.20],[-59.65,-30.20],[-59.65,-29.40]]] }}
+  ]
+};
+
+const DEPTO_BOUNDS = {
+  '9julio':[[-30.20,-62.35],[-28.00,-60.80]],
+  'vera':[[-30.20,-61.10],[-28.00,-59.40]],
+  'obligado':[[-29.10,-59.65],[-27.50,-57.90]],
+  'sanjavier':[[-30.20,-59.65],[-28.90,-58.00]]
+};
+
+const CIUDADES = [
+  { n:'Reconquista', lat:-29.145, lng:-59.643, pob:'~96.000', dep:'General Obligado', cab:true },
+  { n:'Avellaneda',  lat:-29.107, lng:-59.663, pob:'~22.000', dep:'General Obligado', cab:false },
+  { n:'Villa Ocampo',lat:-28.479, lng:-59.363, pob:'~13.000', dep:'General Obligado', cab:false },
+  { n:'Las Toscas',  lat:-28.355, lng:-59.265, pob:'~10.000', dep:'General Obligado', cab:false },
+  { n:'Malabrigo',   lat:-29.348, lng:-59.976, pob:'~7.000',  dep:'General Obligado', cab:false },
+  { n:'Vera',        lat:-29.457, lng:-60.215, pob:'~21.000', dep:'Vera', cab:true },
+  { n:'Calchaquí',   lat:-29.887, lng:-60.284, pob:'~10.000', dep:'Vera', cab:false },
+  { n:'Tostado',     lat:-29.228, lng:-61.774, pob:'~16.000', dep:'9 de Julio', cab:true },
+  { n:'San Javier',  lat:-30.577, lng:-59.944, pob:'~8.000',  dep:'San Javier', cab:true },
+  { n:'Romang',      lat:-29.510, lng:-59.757, pob:'~5.000',  dep:'San Javier', cab:false }
+];
+
+function iniciarMapa() {
+  if (leafletMap) return;
+  leafletMap = L.map('mapa-leaflet', { center:[-29.2,-60.1], zoom:7 });
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution:'© OpenStreetMap', maxZoom:18 }).addTo(leafletMap);
+
+  const mkCab = L.divIcon({ className:'', html:'<div style="width:12px;height:12px;border-radius:50%;background:#c8a84b;border:2.5px solid #1a3d2b;box-shadow:0 1px 4px rgba(0,0,0,.4);"></div>', iconAnchor:[6,6] });
+  const mkCiu = L.divIcon({ className:'', html:'<div style="width:8px;height:8px;border-radius:50%;background:#c8a84b;border:2px solid #fff;box-shadow:0 1px 3px rgba(0,0,0,.3);"></div>', iconAnchor:[4,4] });
+
+  window.mapaLayers = {};
+
+  window.mapaLayers.deptos = L.geoJSON(DEPTO_GEO, {
+    style: f => ({ fillColor:f.properties.col, weight:2, color:'#fff', fillOpacity:.45 }),
+    onEachFeature: (f,layer) => {
+      const p = f.properties;
+      layer.bindTooltip(`<strong style="color:#1a3d2b;">${p.nombre}</strong><br><span style="font-size:11px;">Cabecera: ${p.cabecera}</span>`, { sticky:true });
+      layer.on({
+        mouseover: e => e.target.setStyle({ fillOpacity:.65, weight:3, color:'#c8a84b' }),
+        mouseout:  e => window.mapaLayers.deptos.resetStyle(e.target),
+        click: e => { leafletMap.flyToBounds(e.target.getBounds(), { padding:[40,40] }); }
+      });
+      const c = layer.getBounds().getCenter();
+      L.marker([c.lat,c.lng], { icon: L.divIcon({ className:'', html:`<div style="font-size:12px;font-weight:600;color:#fff;text-shadow:0 1px 3px rgba(0,0,0,.8);white-space:nowrap;pointer-events:none;">${p.nombre}</div>`, iconAnchor:[40,8] }), interactive:false }).addTo(leafletMap);
+    }
+  }).addTo(leafletMap);
+
+  window.mapaLayers.ciudades = L.layerGroup();
+  CIUDADES.forEach(c => {
+    L.marker([c.lat,c.lng], { icon:c.cab?mkCab:mkCiu })
+      .bindPopup(`<div class="pu-title">${c.n}</div><div class="pu-row"><span class="pu-k">Departamento</span><span class="pu-v">${c.dep}</span></div><div class="pu-row"><span class="pu-k">Población aprox.</span><span class="pu-v">${c.pob} hab.</span></div>`)
+      .addTo(window.mapaLayers.ciudades);
+  });
+  window.mapaLayers.ciudades.addTo(leafletMap);
+
+  window.mapaLayers.rios = L.layerGroup([
+    L.polyline([[-27.5,-58.1],[-27.8,-58.0],[-28.0,-58.05],[-28.4,-58.2],[-28.8,-58.3],[-29.1,-58.5],[-29.5,-58.8],[-29.8,-59.0],[-30.2,-59.3]],{ color:'#4a90d9',weight:3,opacity:.7 }).bindTooltip('Río Paraná'),
+    L.polyline([[-30.2,-61.5],[-29.8,-61.0],[-29.5,-60.5],[-29.2,-60.2],[-28.9,-60.0]],{ color:'#4a90d9',weight:2,opacity:.6 }).bindTooltip('Río Salado')
+  ]);
+
+  window.mapaLayers.rutas = L.layerGroup([
+    L.polyline([[-27.8,-59.2],[-28.3,-59.3],[-28.8,-59.5],[-29.1,-59.6],[-29.5,-59.8],[-29.8,-59.9],[-30.2,-59.9]],{ color:'#d45a2a',weight:2.5,opacity:.8,dashArray:'6,4' }).bindTooltip('RN 11'),
+    L.polyline([[-27.9,-60.0],[-28.5,-60.2],[-29.0,-60.5],[-29.5,-60.5],[-30.0,-60.8]],{ color:'#d45a2a',weight:2,opacity:.7,dashArray:'6,4' }).bindTooltip('RN 34')
+  ]);
+
+  L.control.scale({ imperial:false, position:'bottomright' }).addTo(leafletMap);
+}
+
+function toggleMapaLayer(nombre, btn) {
+  btn.classList.toggle('active');
+  if (!window.mapaLayers) return;
+  const layer = window.mapaLayers[nombre];
+  if (!layer) return;
+  leafletMap.hasLayer(layer) ? leafletMap.removeLayer(layer) : layer.addTo(leafletMap);
+}
+
+function zoomMapa(key, btn) {
+  document.querySelectorAll('.zoom-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  if (key === 'norte') { leafletMap.flyTo([-29.2,-60.1], 7, { duration:.7 }); return; }
+  const b = DEPTO_BOUNDS[key];
+  if (b) leafletMap.flyToBounds(b, { padding:[30,30], duration:.7 });
+}
+
+// ══════════════════════════════════════════════════
+// MÓDULO DE PRECIOS
+// ══════════════════════════════════════════════════
+let preciosChart = null;
+let serieActiva = 'corrientes';
+let anioBase = 2019;
+let deflactorActual = 38000;
+
+const ANIOS = [2000,2001,2002,2003,2004,2005,2006,2007,2008,2009,2010,2011,2012,2013,2014,2015,2016,2017,2018,2019,2020,2021,2022,2023,2024];
+const IPC_IDX = [100,101,140,185,193,200,208,218,235,248,262,290,320,370,440,530,680,1050,1900,2850,4200,6800,13000,22000,38000];
+
+const PROD = {
+  soja:    { nombre:'Soja', corrientes:[180,160,220,450,500,520,540,600,700,640,860,1100,1300,1600,1900,2200,3100,4500,7800,11000,16000,28000,55000,82000,120000], tc:[1,1,3.5,2.9,2.9,2.9,3.1,3.1,3.2,3.8,3.9,4.1,4.6,5.5,8.1,9.2,14.8,17.2,38.0,63.0,82.0,103.0,169.0,366.0,1050.0], unidad:'$/tn' },
+  maiz:    { nombre:'Maíz', corrientes:[100,90,140,260,300,310,320,350,430,380,520,680,820,1000,1200,1400,1900,2800,5000,7000,10000,17000,33000,50000,75000], tc:[1,1,3.5,2.9,2.9,2.9,3.1,3.1,3.2,3.8,3.9,4.1,4.6,5.5,8.1,9.2,14.8,17.2,38.0,63.0,82.0,103.0,169.0,366.0,1050.0], unidad:'$/tn' },
+  algodon: { nombre:'Algodón fibra', corrientes:[0.9,0.8,2.5,2.8,3.0,3.2,3.3,3.8,5.0,4.5,5.8,8.5,9.5,11,13,15,22,32,58,80,120,200,420,630,950], tc:[1,1,3.5,2.9,2.9,2.9,3.1,3.1,3.2,3.8,3.9,4.1,4.6,5.5,8.1,9.2,14.8,17.2,38.0,63.0,82.0,103.0,169.0,366.0,1050.0], unidad:'$/kg' },
+  novillo: { nombre:'Novillo', corrientes:[0.8,0.7,1.8,2.2,2.5,2.8,3.0,3.5,4.5,4.2,5.5,7.5,9.0,11,14,18,26,36,65,95,140,230,520,800,1300], tc:[1,1,3.5,2.9,2.9,2.9,3.1,3.1,3.2,3.8,3.9,4.1,4.6,5.5,8.1,9.2,14.8,17.2,38.0,63.0,82.0,103.0,169.0,366.0,1050.0], unidad:'$/kg vivo' },
+  vaca:    { nombre:'Vaca', corrientes:[0.6,0.5,1.4,1.7,2.0,2.2,2.4,2.8,3.6,3.3,4.4,6.0,7.2,8.5,11,14,20,28,50,72,108,180,400,620,1000], tc:[1,1,3.5,2.9,2.9,2.9,3.1,3.1,3.2,3.8,3.9,4.1,4.6,5.5,8.1,9.2,14.8,17.2,38.0,63.0,82.0,103.0,169.0,366.0,1050.0], unidad:'$/kg vivo' }
+};
+let datosPrecios = JSON.parse(JSON.stringify(PROD));
+
+function getConst(prod) {
+  const iBase = IPC_IDX[ANIOS.indexOf(anioBase)] || 2850;
+  return datosPrecios[prod].corrientes.map((p,i) => Math.round((p / (IPC_IDX[i]||IPC_IDX[IPC_IDX.length-1])) * iBase));
+}
+function getUsd(prod) {
+  return datosPrecios[prod].corrientes.map((p,i) => parseFloat((p / (datosPrecios[prod].tc[i]||1050)).toFixed(2)));
+}
+function fmtN(n) { return typeof n === 'number' ? n.toLocaleString('es-AR') : n; }
+
+function actualizarPrecios() {
+  const prod = document.getElementById('sel-prod') ? document.getElementById('sel-prod').value : 'soja';
+  const d = datosPrecios[prod];
+  const C = getConst(prod), U = getUsd(prod);
+  const last = d.corrientes.length-1;
+  const prev = last-1;
+  const vc = ((d.corrientes[last]-d.corrientes[prev])/d.corrientes[prev]*100).toFixed(1);
+  const vk = ((C[last]-C[prev])/C[prev]*100).toFixed(1);
+  const vu = ((U[last]-U[prev])/U[prev]*100).toFixed(1);
+
+  const mr = document.getElementById('pr-metrics');
+  if (mr) mr.innerHTML = `
+    <div class="metric"><div class="metric-lbl">Último corriente</div><div class="metric-val">${fmtN(d.corrientes[last])}</div><div class="metric-unit">${d.unidad} · ${ANIOS[last]}</div><div class="metric-delta ${vc>=0?'delta-up':'delta-dn'}">${vc>=0?'↑':'↓'} ${vc>=0?'+':''}${vc}% vs año ant.</div></div>
+    <div class="metric"><div class="metric-lbl">Último constante</div><div class="metric-val">${fmtN(C[last])}</div><div class="metric-unit">${d.unidad} · base ${anioBase}</div><div class="metric-delta ${vk>=0?'delta-up':'delta-dn'}">${vk>=0?'↑':'↓'} ${vk>=0?'+':''}${vk}% real</div></div>
+    <div class="metric"><div class="metric-lbl">Último USD</div><div class="metric-val">USD ${fmtN(U[last])}</div><div class="metric-unit">${d.unidad.replace('$','USD')} · ${ANIOS[last]}</div><div class="metric-delta ${vu>=0?'delta-up':'delta-dn'}">${vu>=0?'↑':'↓'} ${vu>=0?'+':''}${vu}%</div></div>
+    <div class="metric"><div class="metric-lbl">Deflactor (IPC)</div><div class="metric-val">${deflactorActual.toLocaleString('es-AR')}</div><div class="metric-unit">Base ${anioBase} = 100</div></div>`;
+
+  const COLS = { corrientes:'#1a3d2b', constantes:'#185FA5', dolares:'#854F0B' };
+  let datasets = [], legendHTML = '';
+  const addDs = (label, data, color, dash, yID) => {
+    datasets.push({ label, data, borderColor:color, backgroundColor:color+'15', fill:datasets.length===0&&serieActiva!=='todas', tension:.4, pointRadius:2, borderWidth:2, borderDash:dash||[], yAxisID:yID||'y' });
+    legendHTML += `<span class="legend-item"><span class="legend-sq" style="background:${color};"></span>${label}</span>`;
+  };
+  if (serieActiva==='corrientes'||serieActiva==='todas') addDs('Corrientes ($)', d.corrientes, COLS.corrientes, [], 'y');
+  if (serieActiva==='constantes'||serieActiva==='todas') addDs(`Constantes (base ${anioBase})`, C, COLS.constantes, serieActiva==='todas'?[5,3]:[], 'y');
+  if (serieActiva==='dolares'||serieActiva==='todas') addDs('USD', U, COLS.dolares, serieActiva==='todas'?[2,2]:[], serieActiva==='todas'?'y2':'y');
+
+  const leg = document.getElementById('pr-legend');
+  if (leg) leg.innerHTML = legendHTML;
+
+  const scales = serieActiva==='todas' ? {
+    x:{grid:{color:'rgba(0,0,0,0.04)'},ticks:{font:{size:10},autoSkip:true,maxRotation:0}},
+    y:{position:'left',grid:{color:'rgba(0,0,0,0.04)'},ticks:{font:{size:10},callback:v=>'$'+v.toLocaleString('es-AR')}},
+    y2:{position:'right',grid:{display:false},ticks:{font:{size:10},callback:v=>'USD '+v.toLocaleString('es-AR')}}
+  } : {
+    x:{grid:{color:'rgba(0,0,0,0.04)'},ticks:{font:{size:10},autoSkip:true,maxRotation:0}},
+    y:{grid:{color:'rgba(0,0,0,0.04)'},ticks:{font:{size:10},callback:v=>serieActiva==='dolares'?'USD '+v.toLocaleString('es-AR'):'$'+v.toLocaleString('es-AR')}}
+  };
+
+  const canvas = document.getElementById('pr-chart');
+  if (!canvas) return;
+  if (preciosChart) preciosChart.destroy();
+  preciosChart = new Chart(canvas, {
+    type:'line',
+    data:{ labels:ANIOS, datasets },
+    options:{ responsive:true, maintainAspectRatio:false, plugins:{ legend:{display:false} }, scales }
+  });
+
+  const thead = document.getElementById('pr-thead'), tbody = document.getElementById('pr-tbody');
+  if (!thead||!tbody) return;
+  const n = d.corrientes.length, desde = Math.max(0,n-8);
+  thead.innerHTML = `<tr><th>Año</th><th>Corriente ($)</th><th>Constante ($)</th><th>USD</th><th></th></tr>`;
+  tbody.innerHTML = '';
+  for (let i=desde;i<n;i++) {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td>${ANIOS[i]}</td><td>${fmtN(d.corrientes[i])}</td><td>${fmtN(C[i])}</td><td>${fmtN(U[i])}</td><td>${i<23?'<span class="tag-ej">ejemplo</span>':''}</td>`;
+    tbody.appendChild(tr);
+  }
+}
+
+function setSerie(s, btn) {
+  serieActiva = s;
+  document.querySelectorAll('.serie-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  actualizarPrecios();
+}
+
+function actualizarDeflactor() {
+  deflactorActual = parseFloat(document.getElementById('inp-defl').value)||deflactorActual;
+  anioBase = parseInt(document.getElementById('inp-base').value)||anioBase;
+  const ok = document.getElementById('defl-ok');
+  ok.style.display='block'; setTimeout(()=>ok.style.display='none',3000);
+  actualizarPrecios();
+}
+
+function agregarDato() {
+  const mes = document.getElementById('inp-mes').value;
+  const precio = parseFloat(document.getElementById('inp-precio').value);
+  const tc = parseFloat(document.getElementById('inp-tc').value);
+  const prod = document.getElementById('sel-prod').value;
+  if (!mes||isNaN(precio)||isNaN(tc)) return;
+  const anio = parseInt(mes.split('-')[0]);
+  const idx = ANIOS.indexOf(anio);
+  if (idx>=0) { datosPrecios[prod].corrientes[idx]=precio; datosPrecios[prod].tc[idx]=tc; }
+  else { ANIOS.push(anio); IPC_IDX.push(deflactorActual); datosPrecios[prod].corrientes.push(precio); datosPrecios[prod].tc.push(tc); }
+  const ok = document.getElementById('dato-ok');
+  ok.style.display='block'; setTimeout(()=>ok.style.display='none',3000);
+  actualizarPrecios();
+}
+
+function exportarCSV() {
+  const prod = document.getElementById('sel-prod').value;
+  const d = datosPrecios[prod], C=getConst(prod), U=getUsd(prod);
+  let csv = 'Año,Corriente ($),Constante ($),USD\n';
+  ANIOS.forEach((a,i)=>{ csv+=`${a},${d.corrientes[i]||''},${C[i]||''},${U[i]||''}\n`; });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([csv],{type:'text/csv'}));
+  a.download = `precios_${prod}_otns.csv`; a.click();
+}
+
+// ══════════════════════════════════════════════════
+// DEFINICIÓN DE LOS 10 EJES
+// ══════════════════════════════════════════════════
+const EJES = {
+
+  poblacion: {
+    titulo: 'Eje 1 — Población, Demografía y Ciudades',
+    desc: 'Datos censales 1960–2022 a tres escalas: todo el norte, cada departamento y cada uno de los 52 distritos.',
+    tabs: [
+      { label: 'Mapa', html: `
+        <div class="zoom-btns">
+          <button class="zoom-btn active" onclick="zoomMapa('norte',this)">Todo el norte</button>
+          <button class="zoom-btn" onclick="zoomMapa('9julio',this)">9 de Julio</button>
+          <button class="zoom-btn" onclick="zoomMapa('vera',this)">Vera</button>
+          <button class="zoom-btn" onclick="zoomMapa('obligado',this)">Gral. Obligado</button>
+          <button class="zoom-btn" onclick="zoomMapa('sanjavier',this)">San Javier</button>
+        </div>
+        <div class="mapa-controles">
+          <div class="mapa-layer-btn active" onclick="toggleMapaLayer('deptos',this)"><div class="layer-dot" style="background:#1a3d2b;"></div>Departamentos</div>
+          <div class="mapa-layer-btn active" onclick="toggleMapaLayer('ciudades',this)"><div class="layer-dot" style="background:#c8a84b;"></div>Ciudades</div>
+          <div class="mapa-layer-btn" onclick="toggleMapaLayer('rios',this)"><div class="layer-dot" style="background:#4a90d9;"></div>Ríos</div>
+          <div class="mapa-layer-btn" onclick="toggleMapaLayer('rutas',this)"><div class="layer-dot" style="background:#d45a2a;"></div>Rutas</div>
+        </div>
+        <div id="mapa-leaflet"></div>
+        <div class="grid4">
+          <div class="metric"><div class="metric-lbl">Departamentos</div><div class="metric-val">4</div></div>
+          <div class="metric"><div class="metric-lbl">Superficie total</div><div class="metric-val">~58.700 km²</div></div>
+          <div class="metric"><div class="metric-lbl">Población (2022)</div><div class="metric-val">~340.000</div></div>
+          <div class="metric"><div class="metric-lbl">Distritos</div><div class="metric-val">52</div></div>
+        </div>` },
+      { label: 'Población', html: `
+        <div class="info-box"><strong>6 tablas censales por escala:</strong> datos de población de 1960, 1970, 1980, 1991, 2001 y 2010. Las tablas serán provistas por el equipo en formato Excel.</div>
+        <div class="card"><div class="card-title">Estructura de tabla censal — datos a completar</div>
+          <table class="tbl"><thead><tr><th>Departamento / Distrito</th><th>1960</th><th>1970</th><th>1980</th><th>1991</th><th>2001</th><th>2010</th><th>2022</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Total Norte Santafesino</strong></td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr>
+            <tr><td>Gral. Obligado</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>197.986</td></tr>
+            <tr><td>Vera</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr>
+            <tr><td>9 de Julio</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr>
+            <tr><td>San Javier</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr>
+          </tbody></table>
+        </div>` },
+      { label: 'Varios', html: `
+        <div class="card"><div class="card-title">Links de interés</div>
+          <p style="font-size:13px;margin-bottom:8px;"><a href="http://www.santafe.gov.ar/archivos/estadisticas/censos/Censo1960.pdf" target="_blank" style="color:#185FA5;">→ Censo 1960 — Estadísticas Santa Fe</a></p>
+          <p style="font-size:13px;margin-bottom:8px;"><a href="https://www.indec.gob.ar" target="_blank" style="color:#185FA5;">→ INDEC — Censos nacionales</a></p>
+          <p style="font-size:13px;"><a href="https://www.estadisticasantafe.gob.ar" target="_blank" style="color:#185FA5;">→ IPEC Santa Fe — Estadísticas provinciales</a></p>
+        </div>
+        <div class="info-box">Los artículos de investigación y documentos del equipo se irán sumando a medida que se generen.</div>` }
+    ],
+    onInit: () => setTimeout(iniciarMapa, 200),
+    onTab: (i) => { if (i===0) setTimeout(iniciarMapa,100); }
+  },
+
+  infra: {
+    titulo: 'Eje 2 — Infraestructura Social Básica',
+    desc: 'Educación, salud, servicios financieros, rutas y caminos. Datos geoposicionados con ficha completa de cada establecimiento.',
+    tabs: [
+      { label: 'Educación', html: `
+        <div class="map-ph"><div class="map-ph-ico">🏫</div><div class="map-ph-title">Mapa de establecimientos educativos</div><div class="map-ph-desc">Cada punto en el mapa representará una institución. Al hacer clic se despliega la ficha completa: nivel, nombre, matrícula, accesibilidad y conectividad.</div><div class="map-ph-tag">⏳ Coordenadas a proveer por el equipo</div></div>
+        <div class="card"><div class="card-title">Ejemplo de ficha de establecimiento</div>
+          <table class="tbl"><tbody>
+            <tr><td style="color:#666;width:160px;">Nombre</td><td>Escuela Media Rural "María Rosa Yorio"</td></tr>
+            <tr><td style="color:#666;">Nivel</td><td>Secundario técnico</td></tr>
+            <tr><td style="color:#666;">Título otorgado</td><td>Técnico/a Agropecuario/a</td></tr>
+            <tr><td style="color:#666;">Matrícula</td><td>700 estudiantes</td></tr>
+            <tr><td style="color:#666;">Accesibilidad</td><td><span class="pill pill-verde">Buena</span></td></tr>
+            <tr><td style="color:#666;">Conectividad</td><td><span class="pill" style="background:#FAEEDA;color:#633806;">Irregular</span></td></tr>
+          </tbody></table>
+        </div>` },
+      { label: 'Salud', html: `<div class="map-ph"><div class="map-ph-ico">🏥</div><div class="map-ph-title">Mapa de centros de salud</div><div class="map-ph-desc">Hospitales, CAPS y postas sanitarias. Click en cada punto → ficha completa.</div><div class="map-ph-tag">⏳ Datos a coordinar con Salud Provincial</div></div>` },
+      { label: 'Servicios financieros', html: `<div class="map-ph"><div class="map-ph-ico">🏦</div><div class="map-ph-title">Mapa de servicios financieros</div><div class="map-ph-desc">Bancos, cajeros, cooperativas de crédito y financieras del territorio.</div><div class="map-ph-tag">⏳ Datos a relevar</div></div>` },
+      { label: 'Rutas y caminos', html: `<div class="map-ph"><div class="map-ph-ico">🛣</div><div class="map-ph-title">Mapa vial</div><div class="map-ph-desc">Rutas principales, secundarias, caminos naturales y accesos a poblaciones. Indicará estado de mantenimiento.</div><div class="map-ph-tag">⏳ Datos a relevar</div></div>` },
+      { label: 'Varios', html: `<div class="info-box">Links, artículos y documentos relacionados a infraestructura social básica del norte santafesino.</div>` }
+    ]
+  },
+
+  suelos: {
+    titulo: 'Eje 3 — Suelos',
+    desc: 'Capacidad de uso, series de suelos y superficies por tipología. Fuente: GeoInta. Tres escalas espaciales.',
+    tabs: [
+      { label: 'Mapas de suelos', html: `
+        <div class="escala-btns">
+          <span class="escala-btn active" onclick="toggleEscala(this)">Todo el norte</span>
+          <span class="escala-btn" onclick="toggleEscala(this)">Por departamento</span>
+          <span class="escala-btn" onclick="toggleEscala(this)">Por distrito</span>
+        </div>
+        <div class="map-ph"><div class="map-ph-ico">🗺</div><div class="map-ph-title">Mapa de capacidad de uso de suelos</div><div class="map-ph-desc">Suelos tipo A (agrícola), B (mixto agrícola), C (mixto ganadero), D (ganadero) y áreas de agua. Con tabla de referencias.</div><div class="map-ph-tag">⏳ Mapas provenientes de GeoInta</div></div>
+        <div class="grid4">
+          <div class="metric" style="border-left:3px solid #3B6D11;border-radius:0 8px 8px 0;"><div class="metric-lbl">Suelos A</div><div class="metric-val" style="font-size:14px;">Agrícola</div></div>
+          <div class="metric" style="border-left:3px solid #185FA5;border-radius:0 8px 8px 0;"><div class="metric-lbl">Suelos B</div><div class="metric-val" style="font-size:14px;">Mixto agrícola</div></div>
+          <div class="metric" style="border-left:3px solid #854F0B;border-radius:0 8px 8px 0;"><div class="metric-lbl">Suelos C</div><div class="metric-val" style="font-size:14px;">Mixto ganadero</div></div>
+          <div class="metric" style="border-left:3px solid #5F5E5A;border-radius:0 8px 8px 0;"><div class="metric-lbl">Suelos D</div><div class="metric-val" style="font-size:14px;">Ganadero</div></div>
+        </div>` },
+      { label: 'Superficies', html: `
+        <div class="card"><div class="card-title">Ejemplo — Distrito Lanteri (sup. total: 27.789 ha)</div>
+          <table class="tbl"><thead><tr><th>Tipo</th><th>Aptitud</th><th>Serie principal</th><th>Sup. (ha)</th><th>Sup. (%)</th></tr></thead>
+          <tbody>
+            <tr><td><span class="pill pill-verde">Suelos A</span></td><td>Agrícola</td><td>Serie Lanteri</td><td>3.223</td><td>11,6%</td></tr>
+            <tr><td><span class="pill pill-azul">Suelos B</span></td><td>Mixto agrícola</td><td>Serie Las Garcitas</td><td>8.195</td><td>29,5%</td></tr>
+            <tr><td><span class="pill" style="background:#FAEEDA;color:#633806;">Suelos C</span></td><td>Mixto ganadero</td><td>Complejo XXX</td><td>10.987</td><td>39,5%</td></tr>
+            <tr><td><span class="pill pill-gris">Suelos D</span></td><td>Ganadero</td><td>Complejo YYY</td><td>4.678</td><td>16,8%</td></tr>
+            <tr><td><span class="pill pill-gris">Agua</span></td><td>No apto</td><td>—</td><td>706</td><td>2,6%</td></tr>
+          </tbody></table>
+        </div>` },
+      { label: 'Varios', html: `<div class="info-box">Documentos técnicos, artículos sobre características edáficas de cada tipo de suelo y links a GeoInta.</div>` }
+    ]
+  },
+
+  clima: {
+    titulo: 'Eje 4 — Clima, Red Agrometeorológica',
+    desc: 'Red de pluviómetros y estaciones meteorológicas. Tablas de lluvias actualizables. Red INTA.',
+    tabs: [
+      { label: 'Red de pluviómetros', html: `
+        <div class="map-ph"><div class="map-ph-ico">💧</div><div class="map-ph-title">Mapa de puntos pluviométricos</div><div class="map-ph-desc">Cada punto representa un pluviómetro. Al hacer clic se despliega la tabla de lluvias registradas, actualizable con nuevos datos.</div><div class="map-ph-tag">⏳ Red a reactivar — datos a confirmar</div></div>
+        <div class="card"><div class="card-title">Ejemplo de tabla de registro — Pluviómetro Reconquista</div>
+          <table class="tbl"><thead><tr><th>Año</th><th>Ene</th><th>Feb</th><th>Mar</th><th>Abr</th><th>May</th><th>Jun</th><th>Jul</th><th>Ago</th><th>Sep</th><th>Oct</th><th>Nov</th><th>Dic</th><th>Total</th></tr></thead>
+          <tbody><tr><td>2024</td><td>95</td><td>112</td><td>88</td><td>70</td><td>55</td><td>40</td><td>35</td><td>42</td><td>68</td><td>90</td><td>115</td><td>105</td><td><strong>915</strong></td></tr>
+          <tr><td>2023</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr></tbody></table>
+        </div>` },
+      { label: 'Estaciones meteorológicas', html: `<div class="map-ph"><div class="map-ph-ico">🌤</div><div class="map-ph-title">Mapa de estaciones meteorológicas</div><div class="map-ph-desc">Estaciones con datos de temperatura, humedad, viento y otras variables.</div><div class="map-ph-tag">⏳ Red a reactivar</div></div>` },
+      { label: 'Varios', html: `<div class="info-box">Links, artículos y documentos sobre clima regional del norte santafesino.</div>` }
+    ]
+  },
+
+  bosques: {
+    titulo: 'Eje 5 — Pastizales, Bosques Nativos e Islas',
+    desc: 'Mapas de bosques nativos por categoría (rojo, amarillo, verde). Ley de humedales.',
+    tabs: [
+      { label: 'Mapas de BN', html: `
+        <div class="escala-btns"><span class="escala-btn active" onclick="toggleEscala(this)">Todo el norte</span><span class="escala-btn" onclick="toggleEscala(this)">Por departamento</span><span class="escala-btn" onclick="toggleEscala(this)">Por distrito</span></div>
+        <div class="map-ph"><div class="map-ph-ico">🌳</div><div class="map-ph-title">Mapa de bosques nativos</div><div class="map-ph-desc">Áreas por categoría: rojo (alta conservación), amarillo (media), verde (baja).</div><div class="map-ph-tag">⏳ Cartografía a cargar</div></div>
+        <div class="grid3">
+          <div class="metric" style="border-left:3px solid #E24B4A;border-radius:0 8px 8px 0;"><div class="metric-lbl">Categoría roja</div><div class="metric-val" style="font-size:13px;color:#A32D2D;">Alta conservación</div><div class="metric-unit">Sin desmonte</div></div>
+          <div class="metric" style="border-left:3px solid #BA7517;border-radius:0 8px 8px 0;"><div class="metric-lbl">Categoría amarilla</div><div class="metric-val" style="font-size:13px;color:#854F0B;">Media conservación</div><div class="metric-unit">Uso sostenible</div></div>
+          <div class="metric" style="border-left:3px solid #3B6D11;border-radius:0 8px 8px 0;"><div class="metric-lbl">Categoría verde</div><div class="metric-val" style="font-size:13px;color:#27500A;">Baja conservación</div><div class="metric-unit">Transformación posible</div></div>
+        </div>` },
+      { label: 'Pastizales', html: `<div class="info-box">Información sobre la Ley de Humedales y normativa vigente sobre pastizales en la región.</div>` },
+      { label: 'Medio Ambiente', html: `<div class="info-box"><a href="https://www.santafe.gob.ar/index.php/web/content/view/full/220038" target="_blank" style="color:#185FA5;">→ Ministerio de Medio Ambiente — Santa Fe</a><br><br>Link al sitio oficial con planes aprobados y guía para formular planes de manejo.</div>` },
+      { label: 'Varios', html: `<div class="info-box">Artículos, documentos y links sobre bosques nativos, biodiversidad y conservación.</div>` }
+    ]
+  },
+
+  sistemas: {
+    titulo: 'Eje 6 — Sistemas Productivos Predominantes',
+    desc: 'Caracterización de sistemas por distrito. Clasificados por orientación productiva y tamaño.',
+    tabs: [
+      { label: 'Mapa', html: `<div class="map-ph"><div class="map-ph-ico">📍</div><div class="map-ph-title">Mapa de sistemas productivos</div><div class="map-ph-desc">Puntos por distrito. Al clicar se accede a la ficha y planilla Excel del sistema caracterizado.</div><div class="map-ph-tag">⏳ Se irá completando con el relevamiento</div></div>` },
+      { label: 'Orientación productiva', html: `
+        <div class="map-ph"><div class="map-ph-ico">📍</div><div class="map-ph-title">Mapa por orientación productiva</div><div class="map-ph-desc">Puntos con colores según categoría.</div><div class="map-ph-tag">⏳ Datos a relevar</div></div>
+        <div class="grid3">
+          <div class="metric"><div class="metric-lbl" style="background:#FAEEDA;color:#854F0B;border-radius:4px;padding:3px 8px;display:inline-block;margin-bottom:4px;">Cría</div></div>
+          <div class="metric"><div class="metric-lbl" style="background:#EAF3DE;color:#3B6D11;border-radius:4px;padding:3px 8px;display:inline-block;margin-bottom:4px;">Ciclo completo</div></div>
+          <div class="metric"><div class="metric-lbl" style="background:#E6F1FB;color:#185FA5;border-radius:4px;padding:3px 8px;display:inline-block;margin-bottom:4px;">Agrícola-ganadero</div></div>
+          <div class="metric"><div class="metric-lbl" style="background:#E1F5EE;color:#0F6E56;border-radius:4px;padding:3px 8px;display:inline-block;margin-bottom:4px;">Agrícola</div></div>
+          <div class="metric"><div class="metric-lbl" style="background:#F1EFE8;color:#5F5E5A;border-radius:4px;padding:3px 8px;display:inline-block;margin-bottom:4px;">Otros</div></div>
+        </div>` },
+      { label: 'Tamaño', html: `<div class="map-ph"><div class="map-ph-ico">📊</div><div class="map-ph-title">Mapa por tamaño de empresa</div><div class="map-ph-desc">Grande · Mediano · Chico · Pequeña Agricultura Familiar — cada categoría con un color diferente.</div><div class="map-ph-tag">⏳ Datos a relevar</div></div>` },
+      { label: 'Varios', html: `<div class="info-box">Documentos, artículos y links sobre sistemas productivos del norte santafesino.</div>` }
+    ]
+  },
+
+  satelital: {
+    titulo: 'Eje 7 — Red de Monitoreo Satelital',
+    desc: 'Mapas de cultivos y ganadería por campaña. Historial de mapas anteriores. Estadísticas 2000/01 a la actualidad.',
+    tabs: [
+      { label: 'Mapas de cultivos', html: `
+        <div class="escala-btns"><span class="escala-btn active" onclick="toggleEscala(this)">Todo el norte</span><span class="escala-btn" onclick="toggleEscala(this)">Por departamento</span><span class="escala-btn" onclick="toggleEscala(this)">Por distrito</span></div>
+        <div class="map-ph"><div class="map-ph-ico">🛰</div><div class="map-ph-title">Mapa de cultivos — campaña actual</div><div class="map-ph-desc">Áreas de cultivo en colores según tipo. Acompañado de documento con superficie sembrada y producción.</div><div class="map-ph-tag">⏳ Mapas a proveer por el equipo INTA</div></div>` },
+      { label: 'Mapas de ganadería', html: `<div class="map-ph"><div class="map-ph-ico">🗺</div><div class="map-ph-title">Mapa ganadero</div><div class="map-ph-desc">Dos escalas: todo el norte + por agencia (6 agencias). Información a definir.</div><div class="map-ph-tag">⏳ En definición</div></div>` },
+      { label: 'Mapas anteriores', html: `<div class="info-box">A medida que avancen las campañas, los mapas anteriores quedarán guardados aquí organizados por año y escala espacial.</div>` },
+      { label: 'Estadísticas', html: `<div class="info-box">Tablas de superficies sembradas, cosechadas y rendimientos desde 2000/01. Serán provistas por el equipo en formato Excel.</div>` }
+    ]
+  },
+
+  ganaderia: {
+    titulo: 'Eje 8 — Existencias Ganaderas',
+    desc: 'Stock bovino por año (desde 2000) a nivel de todo el norte, cada departamento y cada uno de los 52 distritos.',
+    tabs: [
+      { label: 'Bovinos', html: `
+        <div class="escala-btns"><span class="escala-btn active" onclick="toggleEscala(this)">Todo el norte</span><span class="escala-btn" onclick="toggleEscala(this)">Por departamento</span><span class="escala-btn" onclick="toggleEscala(this)">Por distrito</span></div>
+        <div class="map-ph"><div class="map-ph-ico">🐄</div><div class="map-ph-title">Mapa bovino por campaña</div><div class="map-ph-desc">Un mapa por campaña y por escala espacial. Cada punto representa 100 cabezas.</div><div class="map-ph-tag">⏳ Datos desde 2000 a proveer</div></div>
+        <div class="card"><div class="card-title">Estructura de tabla — existencias bovinas por categoría</div>
+          <table class="tbl"><thead><tr><th>Año</th><th>Vacas</th><th>Vaquillonas</th><th>Terneros/as</th><th>Novillos</th><th>Toros</th><th>Total</th></tr></thead>
+          <tbody>
+            <tr><td>2024</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr>
+            <tr><td>2010</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr>
+            <tr><td>2000</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr>
+          </tbody></table>
+          <p style="font-size:11px;color:#888;margin-top:.75rem;">Se generarán: 1 tabla total + 4 por departamento + 52 por distrito = 57 tablas.</p>
+        </div>` },
+      { label: 'Otras especies', html: `<div class="info-box" style="background:#E6F1FB;color:#0C447C;">Otras especies (porcinos, ovinos, etc.) se completarán en etapas posteriores.</div>` },
+      { label: 'Varios', html: `<div class="info-box">Artículos, documentos y links sobre ganadería regional del norte santafesino.</div>` }
+    ]
+  },
+
+  mercados: {
+    titulo: 'Eje 9 — Mercados de Productos Agropecuarios',
+    desc: 'Precios desde 2000. Tres series: corrientes, constantes y en dólares. Granos, algodón y bovinos.',
+    tabs: [
+      { label: 'Gráfico y series', html: `
+        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:.875rem;">
+          <select class="pr-select" id="sel-prod" onchange="actualizarPrecios()">
+            <option value="soja">Soja</option>
+            <option value="maiz">Maíz</option>
+            <option value="algodon">Algodón fibra</option>
+            <option value="novillo">Hacienda — Novillo</option>
+            <option value="vaca">Hacienda — Vaca</option>
+          </select>
+          <div class="serie-btns">
+            <button class="serie-btn active" onclick="setSerie('corrientes',this)">Corrientes ($)</button>
+            <button class="serie-btn" onclick="setSerie('constantes',this)">Constantes ($)</button>
+            <button class="serie-btn" onclick="setSerie('dolares',this)">Dólares (USD)</button>
+            <button class="serie-btn" onclick="setSerie('todas',this)">Las tres series</button>
+          </div>
+        </div>
+        <div class="grid4" id="pr-metrics"></div>
+        <div class="info-azul">ℹ Los precios constantes se calculan aplicando el deflactor (IPC). Al actualizar el deflactor en la pestaña siguiente, todos los valores se recalculan automáticamente.</div>
+        <div class="card">
+          <div class="card-title">Evolución de precios — 2000 a la fecha</div>
+          <div class="legend-row" id="pr-legend"></div>
+          <div style="position:relative;width:100%;height:280px;"><canvas id="pr-chart" role="img" aria-label="Gráfico de evolución de precios agropecuarios del norte santafesino.">Datos de precios agropecuarios.</canvas></div>
+        </div>
+        <div class="card">
+          <div class="card-title">Tabla — últimos 8 períodos</div>
+          <div style="overflow-x:auto;"><table class="tbl"><thead id="pr-thead"></thead><tbody id="pr-tbody"></tbody></table></div>
+        </div>` },
+      { label: 'Actualizar deflactor y datos', html: `
+        <div class="card">
+          <div class="card-title">Actualizar deflactor</div>
+          <div class="info-azul">ℹ Al cambiar el año base o el índice IPC y hacer clic en "Recalcular", todos los precios constantes se actualizan automáticamente en el gráfico y la tabla.</div>
+          <div class="form-grid" style="max-width:400px;">
+            <div class="form-field"><span class="form-label">Año base</span>
+              <select class="pr-select" id="inp-base" style="width:100%;">
+                <option value="2015">2015</option><option value="2016">2016</option>
+                <option value="2017">2017</option><option value="2018">2018</option>
+                <option value="2019" selected>2019</option><option value="2020">2020</option>
+                <option value="2021">2021</option>
+              </select></div>
+            <div class="form-field"><span class="form-label">Índice IPC actual</span><input type="number" id="inp-defl" value="38000" placeholder="ej: 38000"></div>
+          </div>
+          <button class="btn-accion primario" onclick="actualizarDeflactor()">↻ Recalcular constantes</button>
+          <div class="ok-msg" id="defl-ok">✓ Deflactor actualizado — valores constantes recalculados</div>
+        </div>
+        <div class="card">
+          <div class="card-title">Agregar nuevo período de precio</div>
+          <div class="form-grid">
+            <div class="form-field"><span class="form-label">Mes / Año</span><input type="month" id="inp-mes" value="2025-01"></div>
+            <div class="form-field"><span class="form-label">Precio corriente ($)</span><input type="number" id="inp-precio" placeholder="ej: 85000"></div>
+            <div class="form-field"><span class="form-label">Tipo cambio ($/USD)</span><input type="number" id="inp-tc" placeholder="ej: 1050"></div>
+          </div>
+          <button class="btn-accion primario" onclick="agregarDato()">+ Agregar dato</button>
+          <div class="ok-msg" id="dato-ok">✓ Dato agregado y gráfico actualizado</div>
+        </div>
+        <div class="card">
+          <div class="card-title">Exportar datos</div>
+          <button class="btn-accion" onclick="exportarCSV()">⬇ Descargar CSV</button>
+          <p style="font-size:12px;color:#666;margin-top:8px;">Genera un archivo .csv con las tres series (corrientes, constantes y USD) listo para abrir en Excel.</p>
+        </div>` },
+      { label: 'Varios', html: `
+        <div class="info-box">
+          <strong>Fuentes de precios a vincular:</strong><br><br>
+          <a href="https://www.bcr.com.ar" target="_blank" style="color:#185FA5;">→ Bolsa de Comercio de Rosario</a><br><br>
+          <a href="https://www.mercadoavellaneda.com.ar" target="_blank" style="color:#185FA5;">→ Mercado de Hacienda de Avellaneda-Reconquista</a><br><br>
+          Artículos de análisis de mercado y documentos del equipo se irán sumando.
+        </div>` }
+    ],
+    onInit: () => setTimeout(actualizarPrecios, 150)
+  },
+
+  otros: {
+    titulo: 'Eje 10 — Otros Temas',
+    desc: 'Contenidos adicionales a definir en conjunto con el equipo territorial.',
+    tabs: [
+      { label: 'En construcción', html: `<div class="info-box" style="font-size:14px;">Esta sección se irá definiendo a medida que surjan demandas y acuerdos con los actores territoriales del norte santafesino.</div>` }
+    ]
+  }
+};
+
+function toggleEscala(el) {
+  el.closest('.escala-btns').querySelectorAll('.escala-btn').forEach(b=>b.classList.remove('active'));
+  el.classList.add('active');
+}
+
+</script>
+</body>
+</html>
