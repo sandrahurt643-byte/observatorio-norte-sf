@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Observatorio Territorial del Norte Santafesino</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600&family=Source+Sans+3:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+:root{--v:#1a3d2b;--d:#c8a84b;--f:#f4f0e8;--w:#fff;--t:#1a1a1a;--s:#666;--bo:rgba(0,0,0,0.1);--r:10px;}
+body{font-family:'Source Sans 3',sans-serif;background:var(--f);color:var(--t);}
+.hdr{background:var(--v);border-bottom:3px solid var(--d);padding:0 1.5rem;height:60px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:200;}
+.logo{display:flex;align-items:center;gap:12px;}
+.lic{width:36px;height:36px;background:var(--d);border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:700;color:var(--v);}
+.ln{font-family:'Playfair Display',serif;font-size:14px;font-weight:600;color:#f0ead8;line-height:1.2;}
+.ls{font-size:9px;color:var(--d);letter-spacing:.07em;text-transform:uppercase;}
+.hbg{background:rgba(200,168,75,.2);border:1px solid rgba(200,168,75,.35);border-radius:14px;padding:4px 12px;font-size:10px;color:var(--d);font-weight:500;}
+.hero{background:linear-gradient(135deg,#1a3d2b,#2d5e42 60%,#3a7a55);padding:2.5rem 1.5rem 2rem;border-bottom:2px solid var(--d);}
+.hey{display:inline-flex;align-items:center;gap:6px;background:rgba(200,168,75,.2);border:1px solid rgba(200,168,75,.4);border-radius:20px;padding:4px 12px;font-size:10px;color:var(--d);font-weight:500;margin-bottom:1rem;letter-spacing:.06em;text-transform:uppercase;}
+.hero h1{font-family:'Playfair Display',serif;font-size:28px;font-weight:600;color:#f0ead8;line-height:1.2;margin-bottom:.5rem;}
+.hero p{font-size:14px;color:#a8c4b0;line-height:1.6;max-width:560px;margin-bottom:1.5rem;}
+.hst{display:flex;gap:2rem;flex-wrap:wrap;}
+.hs{display:flex;flex-direction:column;}
+.hsv{font-family:'Playfair Display',serif;font-size:22px;font-weight:500;color:var(--d);}
+.hsl{font-size:10px;color:#88a890;text-transform:uppercase;letter-spacing:.06em;}
+.alrt{background:#FAEEDA;border:1px solid #EF9F27;border-radius:8px;padding:.875rem 1.25rem;font-size:13px;color:#633806;margin:1.25rem 1.5rem 0;display:flex;align-items:center;gap:10px;}
+#home{display:block;}
+.etit{padding:1.5rem 1.5rem .75rem;font-family:'Playfair Display',serif;font-size:18px;font-weight:500;}
+.egrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:.875rem;padding:0 1.5rem 1.5rem;}
+.ecard{background:var(--w);border:1px solid var(--bo);border-radius:var(--r);padding:1rem;cursor:pointer;transition:border-color .15s,box-shadow .15s;display:flex;flex-direction:column;gap:8px;}
+.ecard:hover{border-color:var(--v);box-shadow:0 0 0 3px rgba(26,61,43,.08);}
+.eico{width:38px;height:38px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:19px;}
+.enum{font-size:9px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--s);}
+.enom{font-size:12px;font-weight:500;color:var(--t);line-height:1.3;}
+.pill{display:inline-block;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:500;}
+.paz{background:#E6F1FB;color:#0C447C;}.pvd{background:#EAF3DE;color:#27500A;}.pgr{background:#F1EFE8;color:#444441;}.pam{background:#FAEEDA;color:#633806;}
+#escreen{display:none;}
+.ehdr{background:var(--w);border-bottom:1px solid var(--bo);padding:1rem 1.5rem;display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;}
+.ehtit{font-family:'Playfair Display',serif;font-size:20px;font-weight:500;}
+.ehdesc{font-size:13px;color:var(--s);margin-top:3px;line-height:1.5;}
+.bv{display:flex;align-items:center;gap:5px;padding:7px 14px;background:var(--f);border:1px solid var(--bo);border-radius:7px;font-size:12px;color:var(--s);cursor:pointer;white-space:nowrap;flex-shrink:0;font-family:'Source Sans 3',sans-serif;transition:background .15s;}
+.bv:hover{background:#e8e4dc;}
+.tabs{display:flex;border-bottom:1px solid var(--bo);background:var(--w);padding:0 1.5rem;overflow-x:auto;}
+.tb{padding:10px 16px;font-size:13px;font-weight:500;cursor:pointer;border-bottom:2px solid transparent;color:var(--s);white-space:nowrap;font-family:'Source Sans 3',sans-serif;background:none;border-top:none;border-left:none;border-right:none;transition:color .15s,border-color .15s;}
+.tb:hover{color:var(--t);}.tb.active{color:var(--v);border-bottom-color:var(--d);}
+.tc{display:none;padding:1.25rem 1.5rem;}.tc.visible{display:block;}
+.card{background:var(--w);border:1px solid var(--bo);border-radius:var(--r);padding:1rem 1.25rem;margin-bottom:1rem;}
+.ct{font-size:13px;font-weight:500;color:var(--t);margin-bottom:.875rem;display:flex;align-items:center;gap:7px;}
+.g2{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:1rem;margin-bottom:1rem;}
+.g3{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:.75rem;margin-bottom:1rem;}
+.g4{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:.75rem;margin-bottom:1rem;}
+.met{background:#f9f7f2;border-radius:8px;padding:.875rem 1rem;}
+.ml2{font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:var(--s);margin-bottom:4px;}
+.mv2{font-size:22px;font-weight:500;}.mu2{font-size:11px;color:var(--s);margin-top:2px;}.md2{font-size:11px;margin-top:3px;}
+.up{color:#0F6E56;}.dn{color:#993C1D;}
+.info{background:#f9f7f2;border-radius:8px;padding:.875rem 1rem;font-size:13px;color:var(--s);line-height:1.6;margin-bottom:1rem;}
+.info strong{color:var(--t);font-weight:500;}
+.iaz{background:#E6F1FB;border:1px solid #B5D4F4;border-radius:8px;padding:.75rem 1rem;font-size:12px;color:#0C447C;margin-bottom:1rem;display:flex;gap:8px;align-items:flex-start;}
+.tbl{width:100%;border-collapse:collapse;font-size:12px;}
+.tbl th{text-align:left;padding:6px 8px;font-weight:500;font-size:10px;text-transform:uppercase;letter-spacing:.05em;color:var(--s);border-bottom:1px solid var(--bo);}
+.tbl td{padding:7px 8px;border-bottom:1px solid var(--bo);}
+.tbl tr:last-child td{border-bottom:none;}
+.mph{background:#dce8dc;border:1px solid var(--bo);border-radius:var(--r);padding:2.5rem 1.5rem;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.75rem;text-align:center;min-height:200px;margin-bottom:1rem;}
+.mphi{width:48px;height:48px;background:rgba(26,61,43,.12);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:22px;color:var(--v);}
+.mpht{font-size:14px;font-weight:500;color:var(--v);}.mphd{font-size:12px;color:#4a7a5a;max-width:360px;line-height:1.5;}
+.mphtg{display:inline-flex;align-items:center;gap:5px;background:rgba(26,61,43,.1);border-radius:12px;padding:4px 10px;font-size:11px;color:var(--v);font-weight:500;}
+.eb{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:1rem;}
+.ebt{padding:5px 12px;border-radius:20px;font-size:11px;font-weight:500;border:1px solid var(--bo);cursor:pointer;background:var(--w);color:var(--s);font-family:'Source Sans 3',sans-serif;transition:all .15s;}
+.ebt.active{background:var(--v);color:var(--d);border-color:var(--v);}
+.ba{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border-radius:7px;background:var(--w);border:1px solid var(--bo);font-size:13px;color:var(--t);cursor:pointer;font-family:'Source Sans 3',sans-serif;transition:background .15s;margin-right:8px;margin-bottom:8px;}
+.ba:hover{background:var(--f);}.ba.pri{background:var(--v);color:var(--d);border-color:var(--v);}.ba.pri:hover{background:#153325;}
+.sb{padding:5px 12px;border-radius:20px;font-size:11px;font-weight:500;border:1px solid var(--bo);cursor:pointer;background:var(--w);color:var(--s);font-family:'Source Sans 3',sans-serif;transition:all .15s;}
+.sb.active{background:var(--v);color:var(--d);border-color:var(--v);}
+.ps{font-size:13px;padding:6px 12px;border-radius:8px;border:1px solid var(--bo);background:var(--w);color:var(--t);font-family:'Source Sans 3',sans-serif;}
+.fg{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px;margin-bottom:10px;}
+.ff{display:flex;flex-direction:column;gap:4px;}.fl2{font-size:10px;color:var(--s);text-transform:uppercase;letter-spacing:.05em;}
+input[type="number"],input[type="month"]{padding:7px 10px;border-radius:7px;border:1px solid var(--bo);font-size:13px;font-family:'Source Sans 3',sans-serif;background:var(--w);color:var(--t);width:100%;}
+.okm{font-size:11px;color:#0F6E56;margin-top:6px;display:none;}
+.lr{display:flex;flex-wrap:wrap;gap:14px;margin-bottom:10px;font-size:12px;color:var(--s);}
+.li{display:flex;align-items:center;gap:5px;}.lsq{width:10px;height:10px;border-radius:2px;}
+.tej{display:inline-block;padding:1px 6px;border-radius:8px;font-size:10px;font-weight:500;background:#FAEEDA;color:#633806;}
+.br{display:flex;align-items:center;gap:8px;margin-bottom:8px;font-size:12px;}
+.bl{width:120px;color:var(--s);text-align:right;flex-shrink:0;font-size:11px;}
+.bt{flex:1;height:8px;background:#f0ece4;border-radius:4px;overflow:hidden;}
+.bf{height:100%;border-radius:4px;}
+.bval{width:90px;color:var(--t);font-weight:500;font-size:11px;}
+#maplf{width:100%;height:420px;border-radius:var(--r);overflow:hidden;margin-bottom:1rem;}
+.llb{display:flex;align-items:center;gap:5px;padding:5px 12px;border-radius:16px;font-size:11px;font-weight:500;border:1px solid var(--bo);cursor:pointer;background:var(--w);color:var(--s);font-family:'Source Sans 3',sans-serif;transition:all .15s;}
+.llb.active{background:var(--v);color:var(--d);border-color:var(--v);}
+.ld{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+.zb{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:.75rem;}
+.zbt{padding:5px 12px;border-radius:20px;font-size:11px;font-weight:500;border:1px solid rgba(200,168,75,.4);cursor:pointer;background:var(--v);color:#c8c8b0;font-family:'Source Sans 3',sans-serif;transition:all .15s;}
+.zbt:hover{color:#f0ead8;}.zbt.active{color:var(--d);border-color:var(--d);}
+.leaflet-popup-content-wrapper{border-radius:10px !important;font-family:'Source Sans 3',sans-serif !important;}
+.leaflet-popup-content{margin:10px 12px !important;font-size:12px !important;}
+.put{font-size:14px;font-weight:600;color:var(--v);margin-bottom:5px;padding-bottom:5px;border-bottom:1px solid #e0dbd0;}
+.pur{display:flex;justify-content:space-between;padding:2px 0;gap:8px;}
+.puk{color:#888;}.puv{font-weight:500;}
+.ftr{background:var(--v);padding:.875rem 1.5rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-top:2rem;}
+.ft{font-size:10px;color:#7a9a82;}.fls{display:flex;gap:8px;}
+.flo{font-size:9px;font-weight:500;color:var(--d);background:rgba(200,168,75,.15);border-radius:4px;padding:3px 8px;text-transform:uppercase;letter-spacing:.04em;}
+@media(max-width:600px){.hdr{padding:0 .75rem;}.ln{font-size:11px;}.hero{padding:1.5rem .75rem 1.25rem;}.hero h1{font-size:20px;}.egrid{padding:0 .75rem 1rem;}.tc{padding:1rem .75rem;}}
+</style>
+</head>
+<body>
+<div class="hdr">
+  <div class="logo"><div class="lic">OT</div><div><div class="ln">Observatorio Territorial del Norte Santafesino</div><div class="ls">INTA EEA Reconquista · UTN FRRq</div></div></div>
+  <div class="hbg">⚙ Versión preliminar</div>
+</div>
+<div class="hero">
+  <div class="hey">★ Portal Digital — Visualizador de datos territoriales</div>
+  <h1>Norte Santafesino<br>en datos</h1>
+  <p>Sistema de información territorial para los departamentos de 9 de Julio, Vera, General Obligado y San Javier. Datos reales del INTA EEA Reconquista y UTN FRRq.</p>
+  <div class="hst">
+    <div class="hs"><span class="hsv">10</span><span class="hsl">Ejes temáticos</span></div>
+    <div class="hs"><span class="hsv">4</span><span class="hsl">Departamentos</span></div>
+    <div class="hs"><span class="hsv">52</span><span class="hsl">Distritos</span></div>
+    <div class="hs"><span class="hsv">2000–2026</span><span class="hsl">Serie histórica</span></div>
+  </div>
+</div>
+<div id="home">
+  <div class="alrt">⚠ Plataforma en construcción. Combina datos reales del INTA EEA Reconquista con información en desarrollo. Última actualización: mayo 2026.</div>
+  <div class="etit">Seleccioná un eje temático</div>
+  <div class="egrid">
+    <div class="ecard" onclick="abrirEje('pob')"><div class="eico" style="background:#E6F1FB;color:#185FA5;">👥</div><div class="enum">Eje 1</div><div class="enom">Población, Demografía y Ciudades</div><span class="pill paz">En desarrollo</span></div>
+    <div class="ecard" onclick="abrirEje('inf')"><div class="eico" style="background:#EAF3DE;color:#3B6D11;">🏫</div><div class="enum">Eje 2</div><div class="enom">Infraestructura Social Básica</div><span class="pill paz">En desarrollo</span></div>
+    <div class="ecard" onclick="abrirEje('sue')"><div class="eico" style="background:#FAEEDA;color:#854F0B;">🗺</div><div class="enum">Eje 3</div><div class="enom">Suelos</div><span class="pill paz">En desarrollo</span></div>
+    <div class="ecard" onclick="abrirEje('cli')"><div class="eico" style="background:#E1F5EE;color:#0F6E56;">🌧</div><div class="enum">Eje 4</div><div class="enom">Clima y Red Agrometeorológica</div><span class="pill paz">En desarrollo</span></div>
+    <div class="ecard" onclick="abrirEje('bos')"><div class="eico" style="background:#EAF3DE;color:#27500A;">🌳</div><div class="enum">Eje 5</div><div class="enom">Pastizales y Bosques Nativos</div><span class="pill paz">En desarrollo</span></div>
+    <div class="ecard" onclick="abrirEje('sis')"><div class="eico" style="background:#FAECE7;color:#993C1D;">🚜</div><div class="enum">Eje 6</div><div class="enom">Sistemas Productivos</div><span class="pill pvd">Datos reales INTA</span></div>
+    <div class="ecard" onclick="abrirEje('sat')"><div class="eico" style="background:#EEEDFE;color:#534AB7;">🛰</div><div class="enum">Eje 7</div><div class="enom">Monitoreo Satelital de Cultivos</div><span class="pill pvd">Datos reales INTA</span></div>
+    <div class="ecard" onclick="abrirEje('gan')"><div class="eico" style="background:#FAEEDA;color:#633806;">🐄</div><div class="enum">Eje 8</div><div class="enom">Existencias Ganaderas</div><span class="pill pvd">Datos reales INTA</span></div>
+    <div class="ecard" onclick="abrirEje('mer')"><div class="eico" style="background:#E6F1FB;color:#0C447C;">📈</div><div class="enum">Eje 9</div><div class="enom">Mercados y Costos</div><span class="pill pvd">Datos reales INTA</span></div>
+    <div class="ecard" onclick="abrirEje('otr')"><div class="eico" style="background:#F1EFE8;color:#5F5E5A;">⋯</div><div class="enum">Eje 10</div><div class="enom">Otros Temas</div><span class="pill pgr">Por definir</span></div>
+  </div>
+</div>
+<div id="escreen">
+  <div class="ehdr"><div><div class="ehtit" id="etit"></div><div class="ehdesc" id="edesc"></div></div><button class="bv" onclick="volverHome()">← Volver</button></div>
+  <div class="tabs" id="tabc"></div>
+  <div id="tabb"></div>
+</div>
+<div class="ftr">
+  <span class="ft">© 2026 Observatorio Territorial del Norte Santafesino · INTA EEA Reconquista · UTN FRRq · Actualización: mayo 2026</span>
+  <div class="fls"><span class="flo">INTA EEA Reconquista</span><span class="flo">UTN FRRq</span></div>
+</div>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script>
+// NAVEGACIÓN
+let ejeActivo=null,lmap=null,pChart=null,chartAlgodónObj=null,chartArrozObj=null,chartSojaObj=null,chartMaizObj=null,chartGirasolObj=null,chartDolarObj=null;
+function abrirEje(id){ejeActivo=id;document.getElementById('home').style.display='none';document.getElementById('escreen').style.display='block';const c=EJ[id];document.getElementById('etit').textContent=c.t;document.getElementById('edesc').textContent=c.d;document.getElementById('tabc').innerHTML=c.tabs.map((x,i)=>`<button class="tb ${i===0?'active':''}" onclick="ct(${i})">${x.l}</button>`).join('');document.getElementById('tabb').innerHTML=c.tabs.map((x,i)=>`<div class="tc ${i===0?'visible':''}" id="t${i}">${x.h}</div>`).join('');if(c.ini)setTimeout(c.ini,100);window.scrollTo(0,0);}
+function volverHome(){document.getElementById('home').style.display='block';document.getElementById('escreen').style.display='none';[lmap].forEach(m=>{if(m){m.remove();lmap=null;}});[pChart,chartAlgodónObj,chartArrozObj,chartSojaObj,chartMaizObj,chartGirasolObj,chartDolarObj].forEach(ch=>{if(ch)ch.destroy();});pChart=chartAlgodónObj=chartArrozObj=chartSojaObj=chartMaizObj=chartGirasolObj=chartDolarObj=null;ejeActivo=null;}
+function ct(i){document.querySelectorAll('.tb').forEach((b,j)=>b.classList.toggle('active',j===i));document.querySelectorAll('.tc').forEach((c,j)=>c.classList.toggle('visible',j===i));const c=EJ[ejeActivo];if(c.tab)setTimeout(()=>c.tab(i),50);}
+function esc(el){el.closest('.eb').querySelectorAll('.ebt').forEach(b=>b.classList.remove('active'));el.classList.add('active');}
+
+// MAPA
+const DG={type:'FeatureCollection',features:[
+  {type:'Feature',properties:{nombre:'9 de Julio',cabecera:'Tostado',sup:'14.216 km²',pob:'~51.000',dist:13,act:'Ganadería, agricultura',col:'#2d6a4f'},geometry:{type:'Polygon',coordinates:[[[-62.35,-28.00],[-61.10,-28.00],[-61.10,-28.45],[-60.80,-28.45],[-60.80,-29.30],[-61.00,-29.80],[-61.00,-30.20],[-62.35,-30.20],[-62.35,-28.00]]]}},
+  {type:'Feature',properties:{nombre:'Vera',cabecera:'Vera',sup:'21.096 km²',pob:'~81.000',dist:15,act:'Ganadería, soja, algodón',col:'#1a5e40'},geometry:{type:'Polygon',coordinates:[[[-61.10,-28.00],[-59.65,-28.00],[-59.65,-28.40],[-59.40,-28.65],[-59.40,-29.10],[-59.65,-29.40],[-59.65,-30.20],[-61.00,-30.20],[-61.00,-29.80],[-60.80,-29.30],[-60.80,-28.45],[-61.10,-28.45],[-61.10,-28.00]]]}},
+  {type:'Feature',properties:{nombre:'General Obligado',cabecera:'Reconquista',sup:'11.628 km²',pob:'197.986',dist:16,act:'Soja, ganadería, algodón',col:'#155232'},geometry:{type:'Polygon',coordinates:[[[-59.65,-28.00],[-59.00,-28.00],[-58.20,-27.50],[-57.90,-27.85],[-57.90,-28.60],[-58.10,-28.90],[-58.50,-29.10],[-59.40,-29.10],[-59.40,-28.65],[-59.65,-28.40],[-59.65,-28.00]]]}},
+  {type:'Feature',properties:{nombre:'San Javier',cabecera:'San Javier',sup:'4.826 km²',pob:'~21.400',dist:8,act:'Ganadería, arroz, pesca',col:'#0f4526'},geometry:{type:'Polygon',coordinates:[[[-59.65,-29.40],[-59.40,-29.10],[-58.50,-29.10],[-58.10,-28.90],[-58.00,-29.20],[-58.00,-30.20],[-59.65,-30.20],[-59.65,-29.40]]]}}
+]};
+const DB={'9j':[[-30.20,-62.35],[-28.00,-60.80]],'vr':[[-30.20,-61.10],[-28.00,-59.40]],'ob':[[-29.10,-59.65],[-27.50,-57.90]],'sj':[[-30.20,-59.65],[-28.90,-58.00]]};
+const CIU=[{n:'Reconquista',lt:-29.145,lg:-59.643,p:'~96.000',d:'General Obligado',c:true},{n:'Avellaneda',lt:-29.107,lg:-59.663,p:'~22.000',d:'General Obligado',c:false},{n:'Villa Ocampo',lt:-28.479,lg:-59.363,p:'~13.000',d:'General Obligado',c:false},{n:'Las Toscas',lt:-28.355,lg:-59.265,p:'~10.000',d:'General Obligado',c:false},{n:'Malabrigo',lt:-29.348,lg:-59.976,p:'~7.000',d:'General Obligado',c:false},{n:'Vera',lt:-29.457,lg:-60.215,p:'~21.000',d:'Vera',c:true},{n:'Calchaquí',lt:-29.887,lg:-60.284,p:'~10.000',d:'Vera',c:false},{n:'Tostado',lt:-29.228,lg:-61.774,p:'~16.000',d:'9 de Julio',c:true},{n:'San Javier',lt:-30.577,lg:-59.944,p:'~8.000',d:'San Javier',c:true},{n:'Romang',lt:-29.510,lg:-59.757,p:'~5.000',d:'San Javier',c:false}];
+function iMap(){
+  if(lmap)return;
+  lmap=L.map('maplf',{center:[-29.2,-60.1],zoom:7});
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'© OpenStreetMap',maxZoom:18}).addTo(lmap);
+  const mC=L.divIcon({className:'',html:'<div style="width:12px;height:12px;border-radius:50%;background:#c8a84b;border:2.5px solid #1a3d2b;box-shadow:0 1px 4px rgba(0,0,0,.4);"></div>',iconAnchor:[6,6]});
+  const mL=L.divIcon({className:'',html:'<div style="width:8px;height:8px;border-radius:50%;background:#c8a84b;border:2px solid #fff;box-shadow:0 1px 3px rgba(0,0,0,.3);"></div>',iconAnchor:[4,4]});
+  window.ML={};
+  window.ML.dep=L.geoJSON(DG,{style:f=>({fillColor:f.properties.col,weight:2,color:'#fff',fillOpacity:.45}),onEachFeature:(f,l)=>{const p=f.properties;l.bindTooltip(`<strong style="color:#1a3d2b;">${p.nombre}</strong><br><span style="font-size:11px;">Cabecera: ${p.cabecera}</span>`,{sticky:true});l.on({mouseover:e=>e.target.setStyle({fillOpacity:.65,weight:3,color:'#c8a84b'}),mouseout:e=>window.ML.dep.resetStyle(e.target),click:e=>lmap.flyToBounds(e.target.getBounds(),{padding:[40,40]})});const c=l.getBounds().getCenter();L.marker([c.lat,c.lng],{icon:L.divIcon({className:'',html:`<div style="font-size:12px;font-weight:600;color:#fff;text-shadow:0 1px 3px rgba(0,0,0,.8);white-space:nowrap;pointer-events:none;">${p.nombre}</div>`,iconAnchor:[40,8]}),interactive:false}).addTo(lmap);}}).addTo(lmap);
+  window.ML.ciu=L.layerGroup();
+  CIU.forEach(x=>{L.marker([x.lt,x.lg],{icon:x.c?mC:mL}).bindPopup(`<div class="put">${x.n}</div><div class="pur"><span class="puk">Departamento</span><span class="puv">${x.d}</span></div><div class="pur"><span class="puk">Población</span><span class="puv">${x.p} hab.</span></div>`).addTo(window.ML.ciu);});
+  window.ML.ciu.addTo(lmap);
+  window.ML.rio=L.layerGroup([L.polyline([[-27.5,-58.1],[-28.0,-58.05],[-28.8,-58.3],[-29.1,-58.5],[-29.5,-58.8],[-30.2,-59.3]],{color:'#4a90d9',weight:3,opacity:.7}).bindTooltip('Río Paraná'),L.polyline([[-30.2,-61.5],[-29.5,-60.5],[-28.9,-60.0]],{color:'#4a90d9',weight:2,opacity:.6}).bindTooltip('Río Salado')]);
+  window.ML.rut=L.layerGroup([L.polyline([[-27.8,-59.2],[-28.8,-59.5],[-29.5,-59.8],[-30.2,-59.9]],{color:'#d45a2a',weight:2.5,opacity:.8,dashArray:'6,4'}).bindTooltip('RN 11'),L.polyline([[-27.9,-60.0],[-29.0,-60.5],[-30.0,-60.8]],{color:'#d45a2a',weight:2,opacity:.7,dashArray:'6,4'}).bindTooltip('RN 34')]);
+  L.control.scale({imperial:false,position:'bottomright'}).addTo(lmap);
+}
+function togML(n,btn){btn.classList.toggle('active');if(!window.ML)return;const l=window.ML[n];if(!l)return;lmap.hasLayer(l)?lmap.removeLayer(l):l.addTo(lmap);}
+function zM(k,btn){document.querySelectorAll('.zbt').forEach(b=>b.classList.remove('active'));btn.classList.add('active');if(k==='n'){lmap.flyTo([-29.2,-60.1],7,{duration:.7});return;}if(DB[k])lmap.flyToBounds(DB[k],{padding:[30,30],duration:.7});}
+
+// DATOS REALES DE PRECIOS
+const ANIOS=[2000,2001,2002,2003,2004,2005,2006,2007,2008,2009,2010,2011,2012,2013,2014,2015,2016,2017,2018,2019,2020,2021,2022,2023,2024,2025,2026];
+const IPC=[100,98.6,139,144.9,153.7,172.5,189.8,205.6,220.2,236.4,261.1,285,315.2,349.9,432.9,512.8,682.7,851.7,1256.3,1935.4,2632.5,3970,7729.9,23063.8,50213.8,67630,71050];
+const TC=[1,1,3.35,2.95,2.96,2.94,3.08,3.12,3.16,3.76,3.93,4.13,4.55,5.48,8.12,9.25,14.79,16.56,28.09,48.17,70.57,95.09,130.8,295,914,1060,1398];
+const INFLAC=[null,-1.4,40.9,3.5,6.1,12.2,10,8.4,8.7,7.7,10.5,9.8,10.6,10.7,23.7,18.5,33.1,24.7,47.6,54,36,50.8,94.8,211.2,117.7,31.5,5.1];
+
+// Dólar histórico promedio anual (oficial BCRA)
+const DOLAR_ANIOS=[2000,2001,2002,2003,2004,2005,2006,2007,2008,2009,2010,2011,2012,2013,2014,2015,2016,2017,2018,2019,2020,2021,2022,2023,2024,2025];
+const DOLAR_OFIC=[1.06,1.12,2.98,2.95,2.94,2.92,3.06,3.11,3.16,3.73,3.91,4.13,4.55,5.47,8.12,9.26,14.77,16.55,28.11,48.25,70.63,95.09,130.57,309.50,918.66,1268.71];
+const DOLAR_BLUE=[1.06,1.12,3.18,2.95,2.94,2.92,3.06,3.11,3.16,3.73,3.91,4.13,5.74,8.77,12.51,14.13,15.23,17.18,28.74,51.59,123.05,170.49,252.63,609.12,1188.65,1315.23];
+
+const PD={
+  soja:{n:'Soja ($/tn)',v:[130,118,250,430,480,500,520,590,680,620,840,1100,1280,1580,1850,2150,3050,4400,7600,10800,18534,32235,55953,128739,278419,376539,461701]},
+  maiz:{n:'Maíz ($/tn)',v:[95,88,165,255,295,305,315,345,425,375,510,670,810,990,1180,1380,1890,2780,4900,6900,10780,19102,31990,66804,161893,229098,258139]},
+  girasol:{n:'Girasol ($/tn)',v:[164,169,495,500,543,513,528,928,1007,735,1045,1341,1469,1646,2337,2074,null,null,null,null,20055,41991,67541,105888,301882,417161,538381]},
+  algodon:{n:'Algodón ($/tn)',v:[null,null,null,null,null,null,null,null,null,900,1500,2498,1927,2628,3038,3012,5836,7840,10946,15479,20594,44464,92621,158774,359000,null,510000]},
+  arroz:{n:'Arroz LF ($/tn)',v:[114,110,310,525,534,465,481,498,575,708,903,932,1036,1237,1868,1925,null,null,null,null,14820,24458,32521,139542,382500,226667,260000]},
+  novillo:{n:'Novillo ($/kg)',v:[0.924,0.851,2.091,2.015,2.111,2.467,2.581,2.969,3.126,3.78,8.042,8.673,9.597,11.287,16.884,23.973,28.747,31.667,45.52,82.88,143.153,227,292.5,1405.3,2264.2,4085.62,4491.93]}
+};
+let serA='corrientes',anioB=2019,deflA=71050;
+function gC(k){const b=IPC[ANIOS.indexOf(anioB)]||IPC[19];return PD[k].v.map((p,i)=>p===null?null:Math.round((p/(IPC[i]||IPC[IPC.length-1]))*b));}
+function gU(k){return PD[k].v.map((p,i)=>p===null?null:parseFloat((p/(TC[i]||TC[TC.length-1])).toFixed(2)));}
+function fN(n){return n===null?'—':typeof n==='number'?n.toLocaleString('es-AR'):n;}
+function getK(){return document.getElementById('sp')?document.getElementById('sp').value:'soja';}
+function updP(){
+  const k=getK(),d=PD[k],C=gC(k),U=gU(k),l=d.v.length-1,p=l-1;
+  const vc=d.v[l]&&d.v[p]?((d.v[l]-d.v[p])/d.v[p]*100).toFixed(1):'?';
+  const vk=C[l]&&C[p]?((C[l]-C[p])/C[p]*100).toFixed(1):'?';
+  const vu=U[l]&&U[p]?((U[l]-U[p])/U[p]*100).toFixed(1):'?';
+  const mr=document.getElementById('pm');
+  if(mr)mr.innerHTML=`<div class="met"><div class="ml2">Último corriente</div><div class="mv2">${fN(d.v[l])}</div><div class="mu2">${d.n} · ${ANIOS[l]}</div><div class="md2 ${parseFloat(vc)>=0?'up':'dn'}">${parseFloat(vc)>=0?'↑':'↓'} ${vc}%</div></div><div class="met"><div class="ml2">Último constante</div><div class="mv2">${fN(C[l])}</div><div class="mu2">Base ${anioB}</div><div class="md2 ${parseFloat(vk)>=0?'up':'dn'}">${parseFloat(vk)>=0?'↑':'↓'} ${vk}% real</div></div><div class="met"><div class="ml2">Último USD</div><div class="mv2">USD ${fN(U[l])}</div><div class="mu2">${ANIOS[l]}</div><div class="md2 ${parseFloat(vu)>=0?'up':'dn'}">${parseFloat(vu)>=0?'↑':'↓'} ${vu}%</div></div><div class="met"><div class="ml2">IPC acumulado</div><div class="mv2">${deflA.toLocaleString('es-AR')}</div><div class="mu2">Base ${anioB}=100</div></div>`;
+  const COL={corrientes:'#1a3d2b',constantes:'#185FA5',dolares:'#854F0B'};
+  let ds=[],lh='';
+  const add=(lb,dt,col,da,yi)=>{ds.push({label:lb,data:dt,borderColor:col,backgroundColor:col+'15',fill:ds.length===0&&serA!=='todas',tension:.4,pointRadius:2,borderWidth:2,borderDash:da||[],yAxisID:yi||'y',spanGaps:true});lh+=`<span class="li"><span class="lsq" style="background:${col};"></span>${lb}</span>`;};
+  if(serA==='corrientes'||serA==='todas') add('Corrientes ($)',d.v,COL.corrientes,[]);
+  if(serA==='constantes'||serA==='todas') add(`Constantes (base ${anioB})`,C,COL.constantes,serA==='todas'?[5,3]:[]);
+  if(serA==='dolares'||serA==='todas') add('USD',U,COL.dolares,serA==='todas'?[2,2]:[],serA==='todas'?'y2':'y');
+  const leg=document.getElementById('pl');if(leg)leg.innerHTML=lh;
+  const sc=serA==='todas'?{x:{grid:{color:'rgba(0,0,0,0.04)'},ticks:{font:{size:10},autoSkip:true,maxRotation:0}},y:{position:'left',grid:{color:'rgba(0,0,0,0.04)'},ticks:{font:{size:10},callback:v=>'$'+v.toLocaleString('es-AR')}},y2:{position:'right',grid:{display:false},ticks:{font:{size:10},callback:v=>'USD '+v.toLocaleString('es-AR')}}}:{x:{grid:{color:'rgba(0,0,0,0.04)'},ticks:{font:{size:10},autoSkip:true,maxRotation:0}},y:{grid:{color:'rgba(0,0,0,0.04)'},ticks:{font:{size:10},callback:v=>serA==='dolares'?'USD '+v.toLocaleString('es-AR'):'$'+v.toLocaleString('es-AR')}}};
+  const cv=document.getElementById('pc');if(!cv)return;
+  if(pChart)pChart.destroy();
+  pChart=new Chart(cv,{type:'line',data:{labels:ANIOS,datasets:ds},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:sc}});
+  const th=document.getElementById('pth'),tb=document.getElementById('ptb');if(!th||!tb)return;
+  const n=d.v.length,de=Math.max(0,n-9);
+  th.innerHTML=`<tr><th>Año</th><th>Corriente</th><th>Constante</th><th>USD</th><th>Inflación</th></tr>`;
+  tb.innerHTML='';
+  for(let i=de;i<n;i++){const tr=document.createElement('tr');tr.innerHTML=`<td>${ANIOS[i]}</td><td>${fN(d.v[i])}</td><td>${fN(C[i])}</td><td>${fN(U[i])}</td><td>${INFLAC[i]!==null?INFLAC[i]+'%':'—'}</td>`;tb.appendChild(tr);}
+}
+function setSA(s,btn){serA=s;document.querySelectorAll('.sb').forEach(b=>b.classList.remove('active'));btn.classList.add('active');updP();}
+function updDefl(){deflA=parseFloat(document.getElementById('id').value)||deflA;anioB=parseInt(document.getElementById('ib').value)||anioB;const ok=document.getElementById('dok');ok.style.display='block';setTimeout(()=>ok.style.display='none',3000);updP();}
+function expCSV(){
+  const k=getK(),d=PD[k],C=gC(k),U=gU(k);
+  let csv='Año,Corriente,Constante,USD,Inflación\n';
+  ANIOS.forEach((a,i)=>{csv+=`${a},${d.v[i]??''},${C[i]??''},${U[i]??''},${INFLAC[i]??''}\n`;});
+  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));a.download=`precios_otns_${k}.csv`;a.click();
+}
+
+// DATOS DE DÓLAR HISTÓRICO
+function chartDolar(){
+  const cv=document.getElementById('dolarChart');if(!cv)return;
+  if(chartDolarObj)chartDolarObj.destroy();
+  chartDolarObj=new Chart(cv,{type:'line',data:{labels:DOLAR_ANIOS,datasets:[{label:'Dólar oficial (promedio anual)',data:DOLAR_OFIC,borderColor:'#1a3d2b',backgroundColor:'#1a3d2b15',fill:true,tension:.4,pointRadius:3,borderWidth:2},{label:'Dólar blue (promedio anual)',data:DOLAR_BLUE,borderColor:'#c8a84b',backgroundColor:'transparent',tension:.4,pointRadius:2,borderWidth:2,borderDash:[5,3]}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'top',labels:{font:{size:11}}}},scales:{x:{grid:{color:'rgba(0,0,0,0.04)'},ticks:{font:{size:10},autoSkip:true,maxRotation:0}},y:{grid:{color:'rgba(0,0,0,0.04)'},ticks:{font:{size:10},callback:v=>'$'+v.toLocaleString('es-AR')}}}}});
+}
+
+// DATOS CULTIVOS
+const CAMP=['2000/01','2001/02','2002/03','2003/04','2004/05','2005/06','2006/07','2007/08','2008/09','2009/10','2010/11','2011/12','2012/13','2013/14','2014/15','2015/16','2016/17','2017/18','2018/19','2019/20','2020/21','2021/22','2022/23','2023/24','2024/25'];
+
+// Algodón
+const ALG_9JUL=[11000,6000,3000,4400,3700,7800,9300,7000,24400,36000,68100,120000,90000,90000,80000,30000,20000,35000,52200,32000,32000,35000,107500,145400,183200];
+const ALG_GO=[4500,3000,4900,6200,8600,4000,7000,3400,6000,8000,10000,12000,10800,11100,15000,12000,7000,9500,11500,8000,9200,13500,14000,10300,12200];
+const ALG_SJ=[300,300,600,800,800,200,200,100,200,400,200,1500,1200,1000,800,800,2000,1500,2000,1800,1500,1500,3500,1300,1200];
+const ALG_VER=[200,200,0,0,0,0,0,0,500,600,10000,10000,10000,11000,12500,10500,8500,7000,8500,3000,3200,3500,29500,31300,40700];
+const ALG_PROV=[16000,9500,8500,11850,13800,12045,16500,10500,31100,45000,88300,143500,112000,113100,108300,53300,37500,53000,74200,44800,45900,53500,154500,188300,237300];
+
+// Arroz
+const ARR_SJ=[8300,5300,9800,12000,13300,17500,18000,19000,20500,22200,23500,30200,30200,32300,30700,28100,19000,17600,17200,13600,16200,16500,11000,13150,16500];
+const ARR_PROD_SJ=[34890,19260,34220,68000,80060,100600,88600,113400,130750,139020,136000,169610,139410,160300,144450,124280,103000,117700,76015,74200,101940,79900,66000,75405,103500];
+
+// Soja por departamento
+const SOJA_GO=[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,71500,57000,57000,71000,72900,69200,75600];
+const SOJA_9JUL=[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,90000,123000,121000,135500,127800,122100,193600];
+const SOJA_SJ=[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,6500,8000,10000,10000,23000,18300,25600];
+const SOJA_VER=[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,19100,21900,29000,29000,44100,30100,40810];
+const CAMP_SOJA=['2018/19','2019/20','2020/21','2021/22','2022/23','2023/24','2024/25'];
+
+// Maíz por departamento
+const MAIZ_GO=[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,37000,37000,39500,39500,38400,28900,15800];
+const MAIZ_9JUL=[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,35000,32000,38500,80000,123100,125000,49805];
+const MAIZ_SJ=[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,6000,7500,8000,8000,6800,7800,2330];
+const MAIZ_VER=[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,15000,15000,15000,15000,10800,11700,3400];
+
+// Girasol por departamento
+const GIRA_GO=[48000,50000,56000,56000,67000,80000,95000,97000,100000,90000,80000,95000,95000,91200,80000,68000,null,null,97000,92000,83000,81000,85000,67100,80600];
+const GIRA_9JUL=[5000,7000,10000,15000,2500,13000,16000,20000,12000,6000,15000,10000,15000,13500,25000,9000,null,null,37200,23000,27600,10000,55000,37300,48540];
+const GIRA_SJ=[6300,4500,6000,8000,9000,12000,12000,18000,20000,12000,10000,11200,10000,10000,8000,4000,null,null,12500,8000,8000,10000,18000,20100,16100];
+const GIRA_VER=[6500,6000,10000,8000,2000,8000,10000,28000,28000,15000,13000,13000,15000,10000,8000,4000,null,null,19200,16500,16000,16000,28000,20600,23800];
+
+function chartAlg(){
+  const cv=document.getElementById('algChart');if(!cv)return;
+  if(chartAlgodónObj)chartAlgodónObj.destroy();
+  chartAlgodónObj=new Chart(cv,{type:'bar',data:{labels:CAMP,datasets:[{label:'9 de Julio',data:ALG_9JUL,backgroundColor:'#1a3d2b'},{label:'Vera',data:ALG_VER,backgroundColor:'#c8a84b'},{label:'Gral. Obligado',data:ALG_GO,backgroundColor:'#854F0B'},{label:'San Javier',data:ALG_SJ,backgroundColor:'#185FA5'}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'top',labels:{font:{size:10}}}},scales:{x:{stacked:true,ticks:{font:{size:9},autoSkip:true,maxRotation:45}},y:{stacked:true,ticks:{font:{size:10},callback:v=>v.toLocaleString('es-AR')+' ha'}}}}});
+}
+function chartArr(){
+  const cv=document.getElementById('arrChart');if(!cv)return;
+  if(chartArrozObj)chartArrozObj.destroy();
+  chartArrozObj=new Chart(cv,{type:'line',data:{labels:CAMP,datasets:[{label:'San Javier — Sup. (ha)',data:ARR_SJ,borderColor:'#1a3d2b',backgroundColor:'#1a3d2b22',fill:true,tension:.4,yAxisID:'y'},{label:'San Javier — Prod. (tn)',data:ARR_PROD_SJ,borderColor:'#185FA5',backgroundColor:'transparent',tension:.4,borderDash:[5,3],yAxisID:'y2'}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'top',labels:{font:{size:10}}}},scales:{x:{ticks:{font:{size:9},autoSkip:true,maxRotation:45}},y:{position:'left',ticks:{font:{size:10},callback:v=>v.toLocaleString('es-AR')+' ha'}},y2:{position:'right',grid:{display:false},ticks:{font:{size:10},callback:v=>v.toLocaleString('es-AR')+' tn'}}}}});
+}
+function chartSoja(){
+  const cv=document.getElementById('sojaChart');if(!cv)return;
+  if(chartSojaObj)chartSojaObj.destroy();
+  chartSojaObj=new Chart(cv,{type:'bar',data:{labels:CAMP_SOJA,datasets:[{label:'9 de Julio',data:[90000,123000,121000,135500,127800,122100,193600],backgroundColor:'#1a3d2b'},{label:'Vera',data:[19100,21900,29000,29000,44100,30100,40810],backgroundColor:'#c8a84b'},{label:'Gral. Obligado',data:[71500,57000,57000,71000,72900,69200,75600],backgroundColor:'#854F0B'},{label:'San Javier',data:[6500,8000,10000,10000,23000,18300,25600],backgroundColor:'#185FA5'}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'top',labels:{font:{size:10}}}},scales:{x:{stacked:true,ticks:{font:{size:10}}},y:{stacked:true,ticks:{font:{size:10},callback:v=>v.toLocaleString('es-AR')+' ha'}}}}});
+}
+function chartMaiz(){
+  const cv=document.getElementById('maizChart');if(!cv)return;
+  if(chartMaizObj)chartMaizObj.destroy();
+  chartMaizObj=new Chart(cv,{type:'bar',data:{labels:CAMP_SOJA,datasets:[{label:'9 de Julio',data:[35000,32000,38500,80000,123100,125000,49805],backgroundColor:'#1a3d2b'},{label:'Vera',data:[15000,15000,15000,15000,10800,11700,3400],backgroundColor:'#c8a84b'},{label:'Gral. Obligado',data:[37000,37000,39500,39500,38400,28900,15800],backgroundColor:'#854F0B'},{label:'San Javier',data:[6000,7500,8000,8000,6800,7800,2330],backgroundColor:'#185FA5'}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'top',labels:{font:{size:10}}}},scales:{x:{stacked:true,ticks:{font:{size:10}}},y:{stacked:true,ticks:{font:{size:10},callback:v=>v.toLocaleString('es-AR')+' ha'}}}}});
+}
+function chartGirasol(){
+  const cv=document.getElementById('giraChart');if(!cv)return;
+  if(chartGirasolObj)chartGirasolObj.destroy();
+  chartGirasolObj=new Chart(cv,{type:'bar',data:{labels:CAMP,datasets:[{label:'Gral. Obligado',data:GIRA_GO,backgroundColor:'#1a3d2b'},{label:'9 de Julio',data:GIRA_9JUL,backgroundColor:'#c8a84b'},{label:'Vera',data:GIRA_VER,backgroundColor:'#854F0B'},{label:'San Javier',data:GIRA_SJ,backgroundColor:'#185FA5'}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'top',labels:{font:{size:10}}}},scales:{x:{stacked:true,ticks:{font:{size:9},autoSkip:true,maxRotation:45}},y:{stacked:true,ticks:{font:{size:10},callback:v=>v.toLocaleString('es-AR')+' ha'}}}}});
+}
+
+// EJES
+const EJ={
+  pob:{t:'Eje 1 — Población, Demografía y Ciudades',d:'Datos censales 1960–2022 a tres escalas: todo el norte, cada departamento y cada uno de los 52 distritos.',
+    tabs:[
+      {l:'Mapa',h:`<div class="zb"><button class="zbt active" onclick="zM('n',this)">Todo el norte</button><button class="zbt" onclick="zM('9j',this)">9 de Julio</button><button class="zbt" onclick="zM('vr',this)">Vera</button><button class="zbt" onclick="zM('ob',this)">Gral. Obligado</button><button class="zbt" onclick="zM('sj',this)">San Javier</button></div><div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:.75rem;"><div class="llb active" onclick="togML('dep',this)"><div class="ld" style="background:#1a3d2b;"></div>Departamentos</div><div class="llb active" onclick="togML('ciu',this)"><div class="ld" style="background:#c8a84b;"></div>Ciudades</div><div class="llb" onclick="togML('rio',this)"><div class="ld" style="background:#4a90d9;"></div>Ríos</div><div class="llb" onclick="togML('rut',this)"><div class="ld" style="background:#d45a2a;"></div>Rutas</div></div><div id="maplf"></div><div class="g4"><div class="met"><div class="ml2">Departamentos</div><div class="mv2">4</div></div><div class="met"><div class="ml2">Superficie</div><div class="mv2">~58.700 km²</div></div><div class="met"><div class="ml2">Población (2022)</div><div class="mv2">~340.000</div></div><div class="met"><div class="ml2">Distritos</div><div class="mv2">52</div></div></div>`},
+      {l:'Población',h:`<div class="info"><strong>6 tablas censales por escala:</strong> datos de 1960 a 2022. A completar con datos del IPEC Santa Fe e INDEC.</div><div class="card"><div class="ct">Estructura de tabla censal</div><table class="tbl"><thead><tr><th>Departamento</th><th>1960</th><th>1991</th><th>2001</th><th>2010</th><th>2022</th></tr></thead><tbody><tr><td><strong>Total Norte SF</strong></td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>Gral. Obligado</td><td>—</td><td>—</td><td>—</td><td>—</td><td>197.986</td></tr><tr><td>Vera</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>9 de Julio</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>San Javier</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr></tbody></table></div>`},
+      {l:'Varios',h:`<div class="card"><div class="ct">Links de interés</div><p style="font-size:13px;margin-bottom:8px;"><a href="https://www.indec.gob.ar" target="_blank" style="color:#185FA5;">→ INDEC — Censos nacionales</a></p><p style="font-size:13px;"><a href="https://www.estadisticasantafe.gob.ar" target="_blank" style="color:#185FA5;">→ IPEC Santa Fe</a></p></div>`}
+    ],ini:()=>setTimeout(iMap,200),tab:(i)=>{if(i===0)setTimeout(iMap,100);}
+  },
+  inf:{t:'Eje 2 — Infraestructura Social Básica',d:'Educación, salud, servicios financieros, rutas y caminos.',
+    tabs:[
+      {l:'Educación',h:`<div class="mph"><div class="mphi">🏫</div><div class="mpht">Mapa de establecimientos educativos</div><div class="mphd">Ficha completa al hacer clic: nivel, matrícula, accesibilidad y conectividad.</div><div class="mphtg">⏳ Coordenadas a proveer por el equipo</div></div><div class="card"><div class="ct">Ejemplo de ficha</div><table class="tbl"><tbody><tr><td style="color:#666;width:150px;">Nombre</td><td>Escuela Media Rural "María Rosa Yorio"</td></tr><tr><td style="color:#666;">Nivel</td><td>Secundario técnico agropecuario</td></tr><tr><td style="color:#666;">Matrícula</td><td>700 estudiantes</td></tr><tr><td style="color:#666;">Accesibilidad</td><td><span class="pill pvd">Buena</span></td></tr><tr><td style="color:#666;">Conectividad</td><td><span class="pill pam">Irregular</span></td></tr></tbody></table></div>`},
+      {l:'Salud',h:`<div class="mph"><div class="mphi">🏥</div><div class="mpht">Mapa de centros de salud</div><div class="mphd">Hospitales, CAPS y postas sanitarias.</div><div class="mphtg">⏳ A coordinar con Salud Provincial</div></div>`},
+      {l:'Servicios financieros',h:`<div class="mph"><div class="mphi">🏦</div><div class="mpht">Servicios financieros</div><div class="mphd">Bancos, cajeros y cooperativas de crédito.</div><div class="mphtg">⏳ Datos a relevar</div></div>`},
+      {l:'Rutas y caminos',h:`<div class="mph"><div class="mphi">🛣</div><div class="mpht">Mapa vial</div><div class="mphd">Rutas nacionales, provinciales y caminos naturales con estado de mantenimiento.</div><div class="mphtg">⏳ Datos a relevar</div></div>`},
+      {l:'Varios',h:`<div class="info">Links y documentos sobre infraestructura social básica del norte santafesino.</div>`}
+    ]
+  },
+  sue:{t:'Eje 3 — Suelos',d:'Capacidad de uso, series de suelos y superficies por tipología. Fuente: GeoInta.',
+    tabs:[
+      {l:'Mapas de suelos',h:`<div class="eb"><span class="ebt active" onclick="esc(this)">Todo el norte</span><span class="ebt" onclick="esc(this)">Por departamento</span><span class="ebt" onclick="esc(this)">Por distrito</span></div><div class="mph"><div class="mphi">🗺</div><div class="mpht">Mapa de capacidad de uso de suelos</div><div class="mphd">Tipo A (agrícola), B (mixto agrícola), C (mixto ganadero), D (ganadero) y agua.</div><div class="mphtg">⏳ Cartografía GeoInta a cargar</div></div>`},
+      {l:'Superficies',h:`<div class="card"><div class="ct">Ejemplo — Distrito Lanteri (27.789 ha)</div><table class="tbl"><thead><tr><th>Tipo</th><th>Aptitud</th><th>Serie</th><th>Ha</th><th>%</th></tr></thead><tbody><tr><td><span class="pill pvd">A</span></td><td>Agrícola</td><td>Lanteri</td><td>3.223</td><td>11,6%</td></tr><tr><td><span class="pill paz">B</span></td><td>Mixto ag.</td><td>Las Garcitas</td><td>8.195</td><td>29,5%</td></tr><tr><td><span class="pill pam">C</span></td><td>Mixto gan.</td><td>Complejo XXX</td><td>10.987</td><td>39,5%</td></tr><tr><td><span class="pill pgr">D</span></td><td>Ganadero</td><td>Complejo YYY</td><td>4.678</td><td>16,8%</td></tr><tr><td><span class="pill pgr">Agua</span></td><td>—</td><td>—</td><td>706</td><td>2,6%</td></tr></tbody></table></div>`},
+      {l:'Varios',h:`<div class="info">Documentos técnicos sobre características edáficas y links a GeoInta.</div>`}
+    ]
+  },
+  cli:{t:'Eje 4 — Clima, Red Agrometeorológica',d:'Red de pluviómetros y estaciones meteorológicas. Red INTA EEA Reconquista.',
+    tabs:[
+      {l:'Red de pluviómetros',h:`<div class="mph"><div class="mphi">💧</div><div class="mpht">Mapa de puntos pluviométricos</div><div class="mphd">Cada punto: un pluviómetro con tabla de lluvias registradas.</div><div class="mphtg">⏳ Red a reactivar</div></div><div class="card"><div class="ct">Ejemplo — Reconquista 2024</div><table class="tbl"><thead><tr><th>Ene</th><th>Feb</th><th>Mar</th><th>Abr</th><th>May</th><th>Jun</th><th>Jul</th><th>Ago</th><th>Sep</th><th>Oct</th><th>Nov</th><th>Dic</th><th>Total</th></tr></thead><tbody><tr><td>95</td><td>112</td><td>88</td><td>70</td><td>55</td><td>40</td><td>35</td><td>42</td><td>68</td><td>90</td><td>115</td><td>105</td><td><strong>915 mm</strong></td></tr></tbody></table></div>`},
+      {l:'Estaciones met.',h:`<div class="mph"><div class="mphi">🌤</div><div class="mpht">Estaciones meteorológicas</div><div class="mphd">Temperatura, humedad, viento. Red INTA.</div><div class="mphtg">⏳ Red a reactivar</div></div>`},
+      {l:'Varios',h:`<div class="info">Links y documentos sobre clima regional del norte santafesino.</div>`}
+    ]
+  },
+  bos:{t:'Eje 5 — Pastizales, Bosques Nativos e Islas',d:'Mapas de bosques nativos por categoría. Ley de humedales. Ministerio de Medio Ambiente.',
+    tabs:[
+      {l:'Mapas de BN',h:`<div class="eb"><span class="ebt active" onclick="esc(this)">Todo el norte</span><span class="ebt" onclick="esc(this)">Por departamento</span><span class="ebt" onclick="esc(this)">Por distrito</span></div><div class="mph"><div class="mphi">🌳</div><div class="mpht">Mapa de bosques nativos</div><div class="mphd">Rojo (alta conservación) · Amarillo (media) · Verde (baja).</div><div class="mphtg">⏳ Cartografía a cargar</div></div><div class="g3"><div class="met" style="border-left:3px solid #E24B4A;border-radius:0 8px 8px 0;"><div class="ml2">Categoría roja</div><div class="mv2" style="font-size:13px;color:#A32D2D;">Alta conservación</div><div class="mu2">Sin desmonte</div></div><div class="met" style="border-left:3px solid #BA7517;border-radius:0 8px 8px 0;"><div class="ml2">Categoría amarilla</div><div class="mv2" style="font-size:13px;color:#854F0B;">Media conservación</div><div class="mu2">Uso sostenible</div></div><div class="met" style="border-left:3px solid #3B6D11;border-radius:0 8px 8px 0;"><div class="ml2">Categoría verde</div><div class="mv2" style="font-size:13px;color:#27500A;">Baja conservación</div><div class="mu2">Transformación posible</div></div></div>`},
+      {l:'Pastizales',h:`<div class="info">Normativa vigente sobre humedales y pastizales naturales de la región.</div>`},
+      {l:'Medio Ambiente',h:`<div class="info"><a href="https://www.santafe.gob.ar" target="_blank" style="color:#185FA5;">→ Ministerio de Medio Ambiente — Santa Fe</a><br><br>Planes aprobados y guía para formular planes de manejo de bosques nativos.</div>`},
+      {l:'Varios',h:`<div class="info">Artículos sobre bosques nativos, biodiversidad y conservación.</div>`}
+    ]
+  },
+  sis:{t:'Eje 6 — Sistemas Productivos Predominantes',d:'Modelos de Cría y Ciclo Completo. Costos de infraestructura y pasturas. INTA EEA Reconquista 2025.',
+    tabs:[
+      {l:'Cría — Cuña Boscosa',h:`<div class="iaz">ℹ Modelo "Cría Mediano — Cuña Boscosa". EEA Reconquista-Garabato · Resp.: Claudio Martínez · TC: $1.250/u$s.</div><div class="g4"><div class="met"><div class="ml2">Superficie</div><div class="mv2">730 ha</div><div class="mu2">100% propia</div></div><div class="met"><div class="ml2">Capital invertido</div><div class="mv2">USD 951.954</div><div class="mu2">76,7% en tierra</div></div><div class="met"><div class="ml2">Vientres</div><div class="mv2">220 cab.</div><div class="mu2">Carga: 0,40 EV/ha</div></div><div class="met"><div class="ml2">Margen bruto/ha</div><div class="mv2">USD 32,18</div><div class="mu2">Destete: 58%</div></div></div><div class="g2"><div class="card"><div class="ct">Uso del suelo</div><div class="br"><div class="bl">Pastizales Nat.</div><div class="bt"><div class="bf" style="width:60.9%;background:#3B6D11;"></div></div><div class="bval">438 ha · 60,9%</div></div><div class="br"><div class="bl">Bosques Nativos</div><div class="bt"><div class="bf" style="width:38.5%;background:#27500A;"></div></div><div class="bval">281 ha · 39,1%</div></div><div class="br"><div class="bl">Otros</div><div class="bt"><div class="bf" style="width:0.8%;background:#888;"></div></div><div class="bval">6 ha · 0,8%</div></div></div><div class="card"><div class="ct">Resultados económicos</div><table class="tbl"><tbody><tr><td style="color:#666;">Ingreso bruto</td><td><strong>USD 33.350/año</strong></td></tr><tr><td style="color:#666;">Gastos directos</td><td>USD 10.210/año</td></tr><tr><td style="color:#666;">Margen bruto</td><td><strong>USD 23.140/año</strong></td></tr><tr><td style="color:#666;">Gastos estructura</td><td>USD 13.235/año</td></tr><tr><td style="color:#666;">Resultado operativo</td><td><strong>USD 9.905/año</strong></td></tr><tr><td style="color:#666;">Ingreso neto</td><td><strong>USD 4.135/año</strong></td></tr></tbody></table></div></div>`},
+      {l:'Ciclo Completo — Domo Occ.',h:`<div class="iaz">ℹ Modelo "Ciclo Completo Mediano Chico — Domo Occidental". EEA Reconquista-Tostado · Resp.: Germán Oprandi · TC: $1.250/u$s.</div><div class="g4"><div class="met"><div class="ml2">Superficie</div><div class="mv2">395 ha</div><div class="mu2">100% propia</div></div><div class="met"><div class="ml2">Capital invertido</div><div class="mv2">USD 1.332.539</div><div class="mu2">74,1% en tierra</div></div><div class="met"><div class="ml2">Vientres</div><div class="mv2">250 cab.</div><div class="mu2">Carga: 1,33 EV/ha</div></div><div class="met"><div class="ml2">Margen bruto/ha</div><div class="mv2">USD 133,74</div><div class="mu2">Destete: 65%</div></div></div><div class="g2"><div class="card"><div class="ct">Uso del suelo</div><div class="br"><div class="bl">Pastizales Nat.</div><div class="bt"><div class="bf" style="width:42.4%;background:#3B6D11;"></div></div><div class="bval">167,5 ha</div></div><div class="br"><div class="bl">Bosques Nativos</div><div class="bt"><div class="bf" style="width:31.1%;background:#27500A;"></div></div><div class="bval">123 ha</div></div><div class="br"><div class="bl">Pasturas pluri.</div><div class="bt"><div class="bf" style="width:15.2%;background:#854F0B;"></div></div><div class="bval">60 ha</div></div><div class="br"><div class="bl">Cult. forraj.</div><div class="bt"><div class="bf" style="width:10.1%;background:#185FA5;"></div></div><div class="bval">40 ha</div></div></div><div class="card"><div class="ct">Resultados económicos</div><table class="tbl"><tbody><tr><td style="color:#666;">Ingreso bruto</td><td><strong>USD 79.377/año</strong></td></tr><tr><td style="color:#666;">Gastos directos</td><td>USD 27.152/año</td></tr><tr><td style="color:#666;">Margen bruto</td><td><strong>USD 52.225/año</strong></td></tr><tr><td style="color:#666;">MB por ha</td><td><strong>USD 133,74/ha</strong></td></tr><tr><td style="color:#666;">Productividad</td><td>162,4 kg/ha ganadera</td></tr></tbody></table></div></div>`},
+      {l:'Costos infraestructura',h:`<div class="iaz">ℹ INTA EEA Reconquista — Ing. Agr. Gabriel Ángel Lacelli. Abril 2026.</div><div class="card"><div class="ct">Alambrados (u$s/km) — Dólar: $1.410</div><div class="br"><div class="bl">7 hilos fijo</div><div class="bt"><div class="bf" style="width:100%;background:#1a3d2b;"></div></div><div class="bval">USD 3.960</div></div><div class="br"><div class="bl">5 hilos fijo</div><div class="bt"><div class="bf" style="width:84.3%;background:#2d6a4f;"></div></div><div class="bval">USD 3.338</div></div><div class="br"><div class="bl">9 hilos corrales</div><div class="bt"><div class="bf" style="width:54.5%;background:#854F0B;"></div></div><div class="bval">USD 2.158</div></div><div class="br"><div class="bl">Eléctrico 2 hilos</div><div class="bt"><div class="bf" style="width:19.5%;background:#185FA5;"></div></div><div class="bval">USD 773</div></div></div><div class="card"><div class="ct">Movilidad ($/km) — Dólar: $1.390</div><table class="tbl"><thead><tr><th>Vehículo</th><th>$/km</th><th>USD/km</th></tr></thead><tbody><tr><td>Auto</td><td>$404,42</td><td>USD 0,291</td></tr><tr><td>Camioneta chica</td><td>$383,36</td><td>USD 0,276</td></tr><tr><td>Camioneta grande</td><td>$529,40</td><td>USD 0,381</td></tr></tbody></table></div>`},
+      {l:'Pasturas',h:`<div class="iaz">ℹ Pasturas subtropicales plurianuales. INTA EEA Reconquista. Dólar: $1.438,10.</div><div class="card"><div class="ct">Costo implantación ($/ha) — Diciembre 2025</div><div class="br"><div class="bl">Pasto Elefante</div><div class="bt"><div class="bf" style="width:100%;background:#185FA5;"></div></div><div class="bval">$737.246</div></div><div class="br"><div class="bl">Pasto Clavel</div><div class="bt"><div class="bf" style="width:90.5%;background:#854F0B;"></div></div><div class="bval">$667.360</div></div><div class="br"><div class="bl">Setaria Narok</div><div class="bt"><div class="bf" style="width:62.5%;background:#3B6D11;"></div></div><div class="bval">$460.651</div></div><div class="br"><div class="bl">Grama Rhodes</div><div class="bt"><div class="bf" style="width:51.1%;background:#0F6E56;"></div></div><div class="bval">$376.666</div></div><div class="br"><div class="bl">Gatton Panic</div><div class="bt"><div class="bf" style="width:23.1%;background:#633806;"></div></div><div class="bval">$170.381</div></div></div>`},
+      {l:'Costos de labores y UTA',h:`
+<div class="iaz">ℹ Datos reales INTA EEA Reconquista — Economía Agraria. Fecha: abril 2026. Dólar: $1.398,24 (oficial minorista, 1 al 15 de abril). Variación respecto julio 2025: +21,8%.</div>
+<div class="g2">
+  <div class="card"><div class="ct">🚜 UTA — Tractor 140 HP + Sembradora SD 16 surcos</div>
+    <div class="info" style="margin-bottom:.75rem;font-size:12px;">Sembradora Deutz-Agroline 16 surcos · Ancho: 8,52 m · Velocidad: 5 km/h · Eficiencia: 80% · Capacidad: 3,41 ha/hs · Tiempo operativo: 0,293 hs/ha</div>
+    <table class="tbl"><thead><tr><th>Componente</th><th>u$s/hs</th><th>u$s/ha</th></tr></thead><tbody>
+      <tr><td>Combustible y lubricantes</td><td>41,20</td><td>12,09</td></tr>
+      <tr><td>Mano de obra (tractorista UATRE)</td><td>4,37</td><td>1,28</td></tr>
+      <tr><td>Reparación y mant. tractor</td><td>6,24</td><td>1,83</td></tr>
+      <tr><td>Reparación y mant. sembradora</td><td>14,53</td><td>4,26</td></tr>
+      <tr><td>Amortización tractor</td><td>7,43</td><td>2,18</td></tr>
+      <tr><td>Amortización sembradora</td><td>32,30</td><td>9,48</td></tr>
+      <tr style="background:#f9f7f2;"><td><strong>Costo horario total</strong></td><td><strong>106,08 u$s/hs</strong></td><td>—</td></tr>
+      <tr style="background:#f9f7f2;"><td><strong>Costo por hectárea total</strong></td><td>—</td><td><strong>USD 31,13 · $43.522/ha</strong></td></tr>
+      <tr><td>Gasto efectivo (sin amortiz.)</td><td>—</td><td>USD 19,47/ha</td></tr>
+      <tr><td>Gasto familiar (sin MO ni amortiz.)</td><td>—</td><td>USD 18,19/ha</td></tr>
+    </tbody></table>
+  </div>
+  <div class="card"><div class="ct">🚜 UTA — Tractor 75 HP + Sembradora SD</div>
+    <div class="info" style="margin-bottom:.75rem;font-size:12px;">Sembradora SD · Ancho: 6,5 m · Velocidad: 5,5 km/h · Eficiencia: 80% · Capacidad: 2,86 ha/hs · Tiempo operativo: 0,350 hs/ha</div>
+    <table class="tbl"><thead><tr><th>Componente</th><th>u$s/hs</th><th>u$s/ha</th></tr></thead><tbody>
+      <tr><td>Combustible y lubricantes</td><td>22,07</td><td>7,72</td></tr>
+      <tr><td>Mano de obra (tractorista UATRE)</td><td>4,37</td><td>1,53</td></tr>
+      <tr><td>Reparación y mant. tractor</td><td>3,47</td><td>1,21</td></tr>
+      <tr><td>Reparación y mant. sembradora</td><td>8,84</td><td>3,09</td></tr>
+      <tr><td>Amortización tractor</td><td>4,13</td><td>1,44</td></tr>
+      <tr><td>Amortización sembradora</td><td>19,64</td><td>6,87</td></tr>
+      <tr style="background:#f9f7f2;"><td><strong>Costo horario total</strong></td><td><strong>62,51 u$s/hs</strong></td><td>—</td></tr>
+      <tr style="background:#f9f7f2;"><td><strong>Costo por hectárea total</strong></td><td>—</td><td><strong>USD 21,86 · $30.563/ha</strong></td></tr>
+      <tr><td>Gasto efectivo (sin amortiz.)</td><td>—</td><td>USD 13,55/ha</td></tr>
+      <tr><td>Gasto familiar (sin MO ni amortiz.)</td><td>—</td><td>USD 12,02/ha</td></tr>
+    </tbody></table>
+  </div>
+</div>
+<div class="card"><div class="ct">📋 Costos de labores — Tractor 140 HP · Abril 2026</div>
+  <div class="info" style="margin-bottom:.75rem;font-size:12px;"><strong>Costos base:</strong> Combustible $2.338/litro · Mano de obra tractorista $6.116,80/hora (UATRE) · Dólar $1.398,24</div>
+  <div style="overflow-x:auto;"><table class="tbl">
+    <thead><tr><th>Implemento</th><th>Descripción</th><th>hs/ha</th><th>Costo total ($/ha)</th><th>Gasto efectivo ($/ha)</th><th>Comb. (lts/ha)</th></tr></thead>
+    <tbody>
+      <tr><td>Arado de rejas</td><td>Gherardi 7c·14″ 2,45m</td><td>0,800</td><td>$74.508</td><td>$59.670</td><td>31,87</td></tr>
+      <tr><td>Arado de cinceles</td><td>Apache 11c·4 mts</td><td>0,347</td><td>$33.556</td><td>$26.709</td><td>14,35</td></tr>
+      <tr><td>Excéntrica</td><td>Apache 32c·24″</td><td>0,439</td><td>$42.509</td><td>$33.032</td><td>18,18</td></tr>
+      <tr><td>Doble acción</td><td>Apache 40 discos 24″</td><td>0,413</td><td>$39.804</td><td>$29.538</td><td>17,02</td></tr>
+      <tr><td>Rastra de dientes</td><td>Giorgi 10,4 mts</td><td>0,058</td><td>$4.810</td><td>$3.908</td><td>2,06</td></tr>
+      <tr><td>Rolo y rabasto</td><td>Giorgi 10,4 mts</td><td>0,084</td><td>$7.180</td><td>$5.646</td><td>3,07</td></tr>
+      <tr><td>Semb. grano grueso conv.</td><td>Migra 7 surcos</td><td>0,364</td><td>$40.008</td><td>$27.982</td><td>17,11</td></tr>
+      <tr><td>Semb. grano fino conv.</td><td>Templar 25 surcos 17,5</td><td>0,406</td><td>$44.095</td><td>$30.008</td><td>18,86</td></tr>
+      <tr><td>Semb. GG directa</td><td>Migra 9 surcos</td><td>0,443</td><td>$49.742</td><td>$34.423</td><td>21,28</td></tr>
+      <tr><td>Semb. GF directa c/fert.</td><td>Templar 25 surcos 17</td><td>0,473</td><td>$54.662</td><td>$35.887</td><td>23,38</td></tr>
+      <tr style="background:#f0f7f0;"><td><strong>Semb. GG directa c/fert.</strong></td><td><strong>Deutz-Agroline 16 surcos (UTA)</strong></td><td><strong>0,293</strong></td><td><strong>$40.262</strong></td><td><strong>$25.427</strong></td><td><strong>17,22</strong></td></tr>
+      <tr><td>Escardillo</td><td>Giorgi 10 surcos</td><td>0,159</td><td>$13.478</td><td>$10.749</td><td>5,76</td></tr>
+      <tr><td>Fertilizadora (voleo)</td><td>26 mts</td><td>0,265</td><td>$23.658</td><td>$18.374</td><td>10,12</td></tr>
+      <tr><td>Cult. completo</td><td>Dolbi 8,6 mts</td><td>0,129</td><td>$12.242</td><td>$9.345</td><td>5,24</td></tr>
+      <tr><td>Vibrocultivador</td><td>4,2 mts</td><td>0,265</td><td>$24.336</td><td>$18.822</td><td>10,41</td></tr>
+      <tr><td>Pulverizadora terrestre</td><td>Barbuy 17 mts·3000 lts</td><td>0,069</td><td>$6.614</td><td>$5.133</td><td>2,83</td></tr>
+      <tr><td>Desmalezadora arrastre</td><td>Yomel 3,2 mts</td><td>0,386</td><td>$32.911</td><td>$26.566</td><td>14,08</td></tr>
+      <tr><td>BES</td><td>Seri 4,5 mts</td><td>0,334</td><td>$28.567</td><td>$22.774</td><td>12,22</td></tr>
+    </tbody>
+  </table></div>
+  <div style="font-size:11px;color:#666;margin-top:.875rem;">Costo total incluye amortizaciones · Gasto efectivo excluye amortizaciones · Fila verde = sembradora de referencia para UTA 140 HP.</div>
+</div>
+`},
+    {l:'Varios',h:`<div class="info">Documentos y artículos sobre sistemas productivos del norte santafesino. Fuente: INTA EEA Reconquista.</div>`}
+    ]
+  },
+  sat:{t:'Eje 7 — Monitoreo Satelital de Cultivos',d:'Superficies sembradas, cosechadas y rendimientos por departamento. Serie real 2000/01–2024/25. INTA EEA Reconquista.',
+    tabs:[
+      {l:'Algodón',h:`<div class="iaz">ℹ Datos reales INTA EEA Reconquista. 2024/25: récord histórico con 237.300 ha en Santa Fe.</div><div class="g4"><div class="met"><div class="ml2">Sup. sembrada 2024/25</div><div class="mv2">237.300 ha</div><div class="mu2">Récord histórico · SF</div></div><div class="met"><div class="ml2">Producción 2024/25</div><div class="mv2">410.269 tn</div></div><div class="met"><div class="ml2">Rendimiento 2024/25</div><div class="mv2">1.796 kg/ha</div></div><div class="met"><div class="ml2">9 de Julio (ppal.)</div><div class="mv2">183.200 ha</div><div class="mu2">77,2% del total prov.</div></div></div><div class="card"><div class="ct">Superficie sembrada por departamento (ha) — 2000/01 a 2024/25</div><div style="height:300px;"><canvas id="algChart" role="img" aria-label="Superficie algodón por departamento"></canvas></div></div><div class="card"><div class="ct">Últimas 5 campañas</div><table class="tbl"><thead><tr><th>Campaña</th><th>Prov. SF</th><th>9 de Julio</th><th>Gral. Obligado</th><th>San Javier</th><th>Vera</th></tr></thead><tbody><tr><td>2024/25</td><td><strong>237.300</strong></td><td>183.200</td><td>12.200</td><td>1.200</td><td>40.700</td></tr><tr><td>2023/24</td><td>188.300</td><td>145.400</td><td>10.300</td><td>1.300</td><td>31.300</td></tr><tr><td>2022/23</td><td>154.500</td><td>107.500</td><td>14.000</td><td>3.500</td><td>29.500</td></tr><tr><td>2021/22</td><td>53.500</td><td>35.000</td><td>13.500</td><td>1.500</td><td>3.500</td></tr><tr><td>2020/21</td><td>45.900</td><td>32.000</td><td>9.200</td><td>1.500</td><td>3.200</td></tr></tbody></table></div>`,ini2:'alg'},
+      {l:'Arroz',h:`<div class="iaz">ℹ San Javier concentra ~50% de la producción arrocera provincial. Datos reales INTA EEA Reconquista.</div><div class="g4"><div class="met"><div class="ml2">Sup. sembrada 2024/25</div><div class="mv2">32.400 ha</div><div class="mu2">Provincia SF</div></div><div class="met"><div class="ml2">Producción 2024/25</div><div class="mv2">220.720 tn</div><div class="mu2">Provincia SF</div></div><div class="met"><div class="ml2">San Javier 2024/25</div><div class="mv2">16.500 ha</div><div class="mu2">103.500 tn</div></div><div class="met"><div class="ml2">Rendimiento prom.</div><div class="mv2">~5.900 kg/ha</div></div></div><div class="card"><div class="ct">San Javier — Superficie y producción histórica</div><div style="height:280px;"><canvas id="arrChart" role="img" aria-label="Arroz San Javier"></canvas></div></div>`,ini2:'arr'},
+      {l:'Soja',h:`<div class="iaz">ℹ Soja por departamento del norte santafesino. Datos reales INTA EEA Reconquista. Serie 2018/19–2024/25.</div><div class="g4"><div class="met"><div class="ml2">Norte SF 2024/25</div><div class="mv2">~335.610 ha</div><div class="mu2">4 departamentos</div></div><div class="met"><div class="ml2">9 de Julio 2024/25</div><div class="mv2">193.600 ha</div><div class="mu2">Ppal. productor</div></div><div class="met"><div class="ml2">Vera 2024/25</div><div class="mv2">40.810 ha</div></div><div class="met"><div class="ml2">Gral. Obligado 2024/25</div><div class="mv2">75.600 ha</div></div></div><div class="card"><div class="ct">Superficie sembrada de soja por departamento (ha)</div><div style="height:280px;"><canvas id="sojaChart" role="img" aria-label="Soja por departamento"></canvas></div></div>`,ini2:'soja'},
+      {l:'Maíz',h:`<div class="iaz">ℹ Maíz por departamento del norte santafesino. Datos reales INTA EEA Reconquista. Serie 2018/19–2024/25.</div><div class="g4"><div class="met"><div class="ml2">Norte SF 2024/25</div><div class="mv2">~71.335 ha</div><div class="mu2">4 departamentos</div></div><div class="met"><div class="ml2">9 de Julio 2024/25</div><div class="mv2">49.805 ha</div></div><div class="met"><div class="ml2">Gral. Obligado 2024/25</div><div class="mv2">15.800 ha</div></div><div class="met"><div class="ml2">Tendencia 2024/25</div><div class="mv2" style="font-size:14px;color:#993C1D;">↓ Baja</div><div class="mu2">vs campaña anterior</div></div></div><div class="card"><div class="ct">Superficie sembrada de maíz por departamento (ha)</div><div style="height:280px;"><canvas id="maizChart" role="img" aria-label="Maíz por departamento"></canvas></div></div>`,ini2:'maiz'},
+      {l:'Girasol',h:`<div class="iaz">ℹ Girasol por departamento del norte santafesino. Datos reales INTA EEA Reconquista. Serie 2000/01–2024/25.</div><div class="g4"><div class="met"><div class="ml2">Norte SF 2024/25</div><div class="mv2">~169.040 ha</div><div class="mu2">4 departamentos</div></div><div class="met"><div class="ml2">Gral. Obligado 2024/25</div><div class="mv2">80.600 ha</div><div class="mu2">Ppal. productor</div></div><div class="met"><div class="ml2">9 de Julio 2024/25</div><div class="mv2">48.540 ha</div></div><div class="met"><div class="ml2">Tendencia 2024/25</div><div class="mv2" style="font-size:14px;color:#0F6E56;">↑ Recupera</div><div class="mu2">vs campaña anterior</div></div></div><div class="card"><div class="ct">Superficie sembrada de girasol por departamento (ha)</div><div style="height:280px;"><canvas id="giraChart" role="img" aria-label="Girasol por departamento"></canvas></div></div>`,ini2:'gira'}
+    ],
+    tab:(i)=>{
+      const map={0:'alg',1:'arr',2:'soja',3:'maiz',4:'gira'};
+      const fn={alg:chartAlg,arr:chartArr,soja:chartSoja,maiz:chartMaiz,gira:chartGirasol};
+      const k=map[i];if(k&&fn[k])setTimeout(fn[k],150);
+    },
+    ini:()=>setTimeout(chartAlg,200)
+  },
+  gan:{t:'Eje 8 — Existencias Ganaderas',d:'Stock bovino por departamento 2008–2019. Precios ganaderos reales desde 2000. Sueldos rurales UATRE 2022–2025.',
+    tabs:[
+      {l:'Existencias bovinas',h:`<div class="iaz">ℹ Datos reales. Fuente: Datos Agricultura, Ganadería y Pesca. INTA EEA Reconquista.</div><div class="g4"><div class="met"><div class="ml2">Total 4 deptos. (2019)</div><div class="mv2">2.197.085</div><div class="mu2">cabezas bovinas</div></div><div class="met"><div class="ml2">Total provincial (2019)</div><div class="mv2">5.443.049</div><div class="mu2">cabezas · Santa Fe</div></div><div class="met"><div class="ml2">Participación norte</div><div class="mv2">~40%</div><div class="mu2">del stock provincial</div></div><div class="met"><div class="ml2">Ppal. departamento</div><div class="mv2">9 de Julio</div><div class="mu2">608.274 cab. (2019)</div></div></div><div class="card"><div class="ct">Stock bovino por departamento</div><table class="tbl"><thead><tr><th>Departamento</th><th>2008</th><th>2011</th><th>2015</th><th>2017</th><th>2019</th></tr></thead><tbody><tr><td><strong>Total 4 deptos.</strong></td><td>2.705.306</td><td>2.161.128</td><td>2.389.241</td><td>2.264.464</td><td>2.197.085</td></tr><tr><td>9 de Julio</td><td>796.608</td><td>571.601</td><td>620.547</td><td>621.408</td><td>608.274</td></tr><tr><td>General Obligado</td><td>527.376</td><td>467.616</td><td>547.498</td><td>508.754</td><td>511.613</td></tr><tr><td>San Javier</td><td>412.972</td><td>342.774</td><td>352.624</td><td>310.922</td><td>307.694</td></tr><tr><td>Vera</td><td>968.350</td><td>779.137</td><td>868.572</td><td>823.380</td><td>769.504</td></tr></tbody></table></div>`},
+      {l:'Precios ganaderos',h:`<div class="iaz">ℹ Precios reales $/kg vivo. Fuente: INTA EEA Reconquista — mercado Avellaneda-Reconquista.</div><div class="g4"><div class="met"><div class="ml2">Novillo (may 2026)</div><div class="mv2">$4.492</div><div class="mu2">$/kg vivo · USD 3,21</div></div><div class="met"><div class="ml2">Ternero (abr 2026)</div><div class="mv2">$5.946</div><div class="mu2">$/kg vivo</div></div><div class="met"><div class="ml2">Vaca descarte (abr 2026)</div><div class="mv2">$3.213</div><div class="mu2">$/kg vivo</div></div><div class="met"><div class="ml2">TC referencia</div><div class="mv2">$1.398</div><div class="mu2">$/USD · abr 2026</div></div></div><div class="card"><div class="ct">Precio promedio anual novillo ($/kg vivo) — 2000 a 2026</div><table class="tbl"><thead><tr><th>Año</th><th>$/kg</th><th>Año</th><th>$/kg</th><th>Año</th><th>$/kg</th></tr></thead><tbody><tr><td>2000</td><td>0,92</td><td>2009</td><td>3,78</td><td>2018</td><td>45,52</td></tr><tr><td>2002</td><td>2,09</td><td>2011</td><td>8,67</td><td>2019</td><td>82,88</td></tr><tr><td>2004</td><td>2,11</td><td>2013</td><td>11,29</td><td>2020</td><td>143,15</td></tr><tr><td>2006</td><td>2,58</td><td>2015</td><td>23,97</td><td>2021</td><td>227,00</td></tr><tr><td>2008</td><td>3,13</td><td>2016</td><td>28,75</td><td>2022</td><td>292,50</td></tr><tr><td>—</td><td>—</td><td>2017</td><td>31,67</td><td>2023</td><td>1.405,30</td></tr><tr><td>—</td><td>—</td><td>—</td><td>—</td><td>2024</td><td>2.264,20</td></tr><tr><td>—</td><td>—</td><td>—</td><td>—</td><td>2025</td><td>4.085,62</td></tr><tr><td>—</td><td>—</td><td>—</td><td>—</td><td>2026</td><td>4.491,93</td></tr></tbody></table></div>`},
+      {l:'Sueldos rurales',h:`<div class="iaz">ℹ Escala salarial UATRE. Fuente: INTA EEA Reconquista.</div><div class="g3"><div class="met"><div class="ml2">Peón único — jul 2025</div><div class="mv2">$1.026.382</div><div class="mu2">USD 969/mes</div></div><div class="met"><div class="ml2">Tractorista — jul 2025</div><div class="mv2">$1.110.632</div><div class="mu2">$/mes</div></div><div class="met"><div class="ml2">Encargado — jul 2025</div><div class="mv2">$1.273.579</div><div class="mu2">$/mes</div></div></div><div class="card"><div class="ct">Evolución salarial peón único — 2022 a 2025</div><table class="tbl"><thead><tr><th>Período</th><th>Peón único ($/mes)</th><th>Jornal ($/día)</th></tr></thead><tbody><tr><td>Ene–Mar 2022</td><td>53.959</td><td>2.374</td></tr><tr><td>Dic 2022</td><td>110.435</td><td>4.859</td></tr><tr><td>Ago 2023</td><td>201.450</td><td>8.863</td></tr><tr><td>Dic 2023</td><td>302.518</td><td>13.310</td></tr><tr><td>Ene 2024</td><td>341.845</td><td>15.040</td></tr><tr><td>Jun 2024</td><td>593.301</td><td>26.104</td></tr><tr><td>Dic 2024</td><td>745.707</td><td>32.809</td></tr><tr><td>Feb–Jul 2025</td><td>1.026.382</td><td>45.158</td></tr></tbody></table></div>`},
+      {l:'Varios',h:`<div class="info">Artículos y documentos sobre ganadería regional. Fuente: INTA EEA Reconquista — Economía Agraria.</div>`}
+    ]
+  },
+  mer:{t:'Eje 9 — Mercados Agropecuarios y Costos de Producción',d:'Precios reales 2000–2026. Deflactor IPC real BCRA. Márgenes probabilísticos INTA. Dólar histórico. Cotizaciones al 20/05/2026.',
+    tabs:[
+      {l:'Precios históricos',h:`<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:.875rem;"><select class="ps" id="sp" onchange="updP()"><option value="soja">Soja ($/tn)</option><option value="maiz">Maíz ($/tn)</option><option value="girasol">Girasol ($/tn)</option><option value="algodon">Algodón bruto ($/tn)</option><option value="arroz">Arroz LF ($/tn)</option><option value="novillo">Novillo ($/kg vivo)</option></select><div style="display:flex;gap:5px;flex-wrap:wrap;"><button class="sb active" onclick="setSA('corrientes',this)">Corrientes ($)</button><button class="sb" onclick="setSA('constantes',this)">Constantes ($)</button><button class="sb" onclick="setSA('dolares',this)">Dólares (USD)</button><button class="sb" onclick="setSA('todas',this)">Las tres series</button></div></div><div class="g4" id="pm"></div><div class="iaz">ℹ Precios corrientes: nominales. Constantes: deflactados por IPC real BCRA. USD: corriente / TC oficial. Fuente: INTA EEA Reconquista · Cotización cultivos 20/05/2026.</div><div class="card"><div class="ct">Evolución de precios — 2000 a 2026</div><div class="lr" id="pl"></div><div style="position:relative;width:100%;height:280px;"><canvas id="pc" role="img" aria-label="Evolución histórica de precios agropecuarios."></canvas></div></div><div class="card"><div class="ct">Tabla — últimos 9 períodos</div><div style="overflow-x:auto;"><table class="tbl"><thead id="pth"></thead><tbody id="ptb"></tbody></table></div></div>`,ini2:'precios'},
+      {l:'Cotizaciones actuales',h:`<div class="iaz">ℹ Cotizaciones al 20 de mayo de 2026. Fuente: INTA EEA Reconquista.</div><div class="card"><div class="ct">Precios de cultivos al 20/05/2026 ($/tn)</div><table class="tbl"><thead><tr><th>Cultivo</th><th>Cotización ($/tn)</th><th>USD/tn</th><th>Tendencia</th></tr></thead><tbody><tr><td>Soja</td><td>$461.701</td><td>USD 330</td><td><span class="pill pvd">↑ vs 2025</span></td></tr><tr><td>Maíz</td><td>$258.139</td><td>USD 184</td><td><span class="pill pvd">↑ vs 2025</span></td></tr><tr><td>Girasol</td><td>$538.381</td><td>USD 385</td><td><span class="pill pvd">↑ vs 2025</span></td></tr><tr><td>Sorgo</td><td>$258.053</td><td>USD 184</td><td><span class="pill pvd">↑ vs 2025</span></td></tr><tr><td>Arroz LF</td><td>$260.000</td><td>USD 186</td><td><span class="pill pam">→ estable</span></td></tr><tr><td>Algodón bruto</td><td>$510.000</td><td>USD 365</td><td><span class="pill pvd">↑ vs 2024</span></td></tr></tbody></table></div><div class="g3"><div class="met"><div class="ml2">Novillo (may 2026)</div><div class="mv2">$4.492</div><div class="mu2">$/kg vivo · USD 3,21</div></div><div class="met"><div class="ml2">Ternero (abr 2026)</div><div class="mv2">$5.946</div><div class="mu2">$/kg vivo</div></div><div class="met"><div class="ml2">Gasoil (abr 2026)</div><div class="mv2">$1.744</div><div class="mu2">$/litro · USD 1,25</div></div></div>`},
+      {l:'Dólar histórico',h:`<div class="iaz">ℹ Tipo de cambio oficial (BCRA) y dólar blue (promedio anual). Fuente: INTA EEA Reconquista.</div><div class="g4"><div class="met"><div class="ml2">Dólar oficial 2025</div><div class="mv2">$1.268,71</div><div class="mu2">Promedio anual</div></div><div class="met"><div class="ml2">Dólar blue 2025</div><div class="mv2">$1.315,23</div><div class="mu2">Promedio anual</div></div><div class="met"><div class="ml2">Dólar oficial abr 2026</div><div class="mv2">$1.419,32</div><div class="mu2">Cierre mensual</div></div><div class="met"><div class="ml2">Variación 2024→2025</div><div class="mv2">+38%</div><div class="mu2">Dólar oficial</div></div></div><div class="card"><div class="ct">Evolución del tipo de cambio — 2000 a 2025 ($/USD)</div><div style="position:relative;width:100%;height:300px;"><canvas id="dolarChart" role="img" aria-label="Evolución del dólar oficial y blue 2000-2025"></canvas></div></div><div class="card"><div class="ct">Serie histórica — promedios anuales</div><table class="tbl"><thead><tr><th>Año</th><th>Dólar oficial ($/USD)</th><th>Dólar blue ($/USD)</th></tr></thead><tbody><tr><td>2000</td><td>1,06</td><td>1,06</td></tr><tr><td>2002</td><td>2,98</td><td>3,18</td></tr><tr><td>2010</td><td>3,91</td><td>3,91</td></tr><tr><td>2015</td><td>9,26</td><td>14,13</td></tr><tr><td>2018</td><td>28,11</td><td>28,74</td></tr><tr><td>2019</td><td>48,25</td><td>51,59</td></tr><tr><td>2020</td><td>70,63</td><td>123,05</td></tr><tr><td>2021</td><td>95,09</td><td>170,49</td></tr><tr><td>2022</td><td>130,57</td><td>252,63</td></tr><tr><td>2023</td><td>309,50</td><td>609,12</td></tr><tr><td>2024</td><td>918,66</td><td>1.188,65</td></tr><tr><td>2025</td><td>1.268,71</td><td>1.315,23</td></tr></tbody></table></div>`,ini2:'dolar'},
+      {l:'Márgenes probabilísticos',h:`<div class="iaz">ℹ Análisis INTA EEA Reconquista — Ing. Agr. Gabriel Ángel Lacelli. Fecha: 3 de abril de 2024. TC: $1.010 (dólar blue).</div>
+<div class="g2">
+  <div class="card"><div class="ct">🌱 Algodón Este — Márgenes brutos ($/ha)</div>
+    <div class="info" style="margin-bottom:.75rem;font-size:12px;"><strong>Rendimientos:</strong> Alto 25 qq/ha · Medio 18 qq/ha · Bajo 13 qq/ha<br><strong>MB esperado: $212.175/ha · Prob. ganar más de $100k: 67%</strong></div>
+    <table class="tbl"><thead><tr><th>Precio algodón</th><th>Rend. alto (25 qq)</th><th>Rend. medio (18 qq)</th><th>Rend. bajo (13 qq)</th></tr></thead><tbody>
+      <tr><td>$41.000/qq</td><td class="up">$437.162</td><td class="up">$219.349</td><td>$63.768</td></tr>
+      <tr><td>$39.500/qq</td><td class="up">$400.037</td><td class="up">$192.619</td><td>$44.463</td></tr>
+      <tr><td>$38.000/qq</td><td class="up">$362.912</td><td class="up">$165.889</td><td>$25.158</td></tr>
+    </tbody></table></div>
+  <div class="card"><div class="ct">🌱 Algodón Oeste — Márgenes brutos ($/ha)</div>
+    <div class="info" style="margin-bottom:.75rem;font-size:12px;"><strong>Rendimientos:</strong> Alto 30 qq/ha · Medio 25 qq/ha · Bajo 20 qq/ha<br><strong>MB esperado: $302.533/ha · Prob. ganar más de $100k: 100%</strong></div>
+    <table class="tbl"><thead><tr><th>Precio algodón</th><th>Rend. alto (30 qq)</th><th>Rend. medio (25 qq)</th><th>Rend. bajo (20 qq)</th></tr></thead><tbody>
+      <tr><td>$41.000/qq</td><td class="up">$495.239</td><td class="up">$339.658</td><td class="up">$184.077</td></tr>
+      <tr><td>$39.500/qq</td><td class="up">$450.689</td><td class="up">$302.533</td><td class="up">$154.377</td></tr>
+      <tr><td>$38.000/qq</td><td class="up">$406.139</td><td class="up">$265.408</td><td class="up">$124.677</td></tr>
+    </tbody></table></div>
+  <div class="card"><div class="ct">🌻 Girasol — Márgenes brutos ($/ha)</div>
+    <div class="info" style="margin-bottom:.75rem;font-size:12px;"><strong>Rendimientos:</strong> Alto 17 qq/ha · Medio 14 qq/ha · Bajo 6 qq/ha<br><strong>MB esperado: $50.613/ha · Prob. ganar más de $100k: 22,5%</strong></div>
+    <table class="tbl"><thead><tr><th>Precio girasol</th><th>Rend. alto (17 qq)</th><th>Rend. medio (14 qq)</th><th>Rend. bajo (6 qq)</th></tr></thead><tbody>
+      <tr><td>$25.000/qq</td><td class="up">$158.390</td><td class="up">$106.031</td><td class="dn">-$33.594</td></tr>
+      <tr><td>$23.500/qq</td><td class="up">$137.373</td><td>$88.722</td><td class="dn">-$41.012</td></tr>
+      <tr><td>$22.000/qq</td><td class="up">$116.355</td><td>$71.414</td><td class="dn">-$48.430</td></tr>
+    </tbody></table></div>
+  <div class="card"><div class="ct">🌽 Maíz — Márgenes brutos ($/ha)</div>
+    <div class="info" style="margin-bottom:.75rem;font-size:12px;"><strong>Rendimientos:</strong> Alto 55 qq/ha · Medio 36 qq/ha · Bajo 25 qq/ha<br><strong>MB esperado: $111.377/ha · Prob. ganar más de $100k: 40%</strong></div>
+    <table class="tbl"><thead><tr><th>Precio maíz</th><th>Rend. alto (55 qq)</th><th>Rend. medio (36 qq)</th><th>Rend. bajo (25 qq)</th></tr></thead><tbody>
+      <tr><td>$16.000/qq</td><td class="up">$304.249</td><td class="up">$115.224</td><td>$5.789</td></tr>
+      <tr><td>$15.100/qq</td><td class="up">$265.343</td><td>$89.758</td><td class="dn">-$11.896</td></tr>
+      <tr><td>$14.000/qq</td><td class="up">$217.791</td><td>$58.633</td><td class="dn">-$33.510</td></tr>
+    </tbody></table></div>
+  <div class="card"><div class="ct">🌾 Soja — Márgenes brutos ($/ha)</div>
+    <div class="info" style="margin-bottom:.75rem;font-size:12px;"><strong>Rendimientos:</strong> Alto 25 qq/ha · Medio 20 qq/ha · Bajo 10 qq/ha<br><strong>MB esperado: $159.070/ha · Prob. ganar más de $100k: 80%</strong></div>
+    <table class="tbl"><thead><tr><th>Precio soja</th><th>Rend. alto (25 qq)</th><th>Rend. medio (20 qq)</th><th>Rend. bajo (10 qq)</th></tr></thead><tbody>
+      <tr><td>$28.000/qq</td><td class="up">$302.946</td><td class="up">$201.258</td><td class="dn">-$2.120</td></tr>
+      <tr><td>$26.000/qq</td><td class="up">$261.938</td><td class="up">$168.451</td><td class="dn">-$18.523</td></tr>
+      <tr><td>$24.000/qq</td><td class="up">$220.929</td><td class="up">$135.644</td><td class="dn">-$34.927</td></tr>
+    </tbody></table></div>
+  <div class="card"><div class="ct">🌾 Sorgo — Márgenes brutos ($/ha)</div>
+    <div class="info" style="margin-bottom:.75rem;font-size:12px;"><strong>Rendimientos:</strong> Alto 35 qq/ha · Medio 30 qq/ha · Bajo 20 qq/ha<br><strong>MB esperado: $107.631/ha · Prob. ganar más de $100k: 52,5%</strong></div>
+    <table class="tbl"><thead><tr><th>Precio sorgo</th><th>Rend. alto (35 qq)</th><th>Rend. medio (30 qq)</th><th>Rend. bajo (20 qq)</th></tr></thead><tbody>
+      <tr><td>$17.000/qq</td><td class="up">$242.126</td><td class="up">$188.497</td><td>$81.238</td></tr>
+      <tr><td>$15.000/qq</td><td class="up">$187.144</td><td class="up">$141.369</td><td>$49.819</td></tr>
+      <tr><td>$13.000/qq</td><td class="up">$132.161</td><td>$94.241</td><td>$18.400</td></tr>
+    </tbody></table></div>
+</div>
+<div class="info" style="margin-top:.5rem;">⚠ Todos los valores son de abril 2024 con TC $1.010 (dólar blue). Los precios actuales difieren significativamente. Fuente: INTA EEA Reconquista — Ing. Agr. Gabriel Ángel Lacelli.</div>`},
+      {l:'Deflactor e inflación',h:`<div class="iaz">ℹ Tasas de inflación reales BCRA. Serie completa 2000–2026.</div><div class="g4"><div class="met"><div class="ml2">Inflación 2023</div><div class="mv2">211,2%</div></div><div class="met"><div class="ml2">Inflación 2024</div><div class="mv2">117,7%</div></div><div class="met"><div class="ml2">Inflación 2025</div><div class="mv2">31,5%</div></div><div class="met"><div class="ml2">Inflación 2026</div><div class="mv2">~5,1%</div><div class="mu2">Ene–Feb acumulado</div></div></div><div class="card"><div class="ct">Actualizar año base del deflactor</div><div class="fg" style="max-width:400px;"><div class="ff"><span class="fl2">Año base</span><select class="ps" id="ib" style="width:100%;"><option value="2015">2015</option><option value="2016">2016</option><option value="2017">2017</option><option value="2018">2018</option><option value="2019" selected>2019</option><option value="2020">2020</option><option value="2021">2021</option></select></div><div class="ff"><span class="fl2">IPC acumulado actual</span><input type="number" id="id" value="71050"></div></div><button class="ba pri" onclick="updDefl()">↻ Recalcular constantes</button><div class="okm" id="dok">✓ Deflactor actualizado</div></div><div class="card"><div class="ct">Exportar datos</div><button class="ba" onclick="expCSV()">⬇ Descargar CSV</button><p style="font-size:12px;color:#666;margin-top:8px;">CSV con las tres series (corrientes, constantes y USD) listo para Excel.</p></div>`},
+      {l:'Fuentes',h:`<div class="info"><strong>Fuentes de datos reales integradas:</strong><br><br>• INTA EEA Reconquista — Economía Agraria (Ing. Agr. Gabriel Ángel Lacelli, Claudio Martínez, Germán Oprandi)<br><br>• BCRA — Tasas de inflación mensuales 2000–2026<br><br>• UATRE — Escala salarial trabajadores rurales 2022–2025<br><br>• Datos Agric., Ganadería y Pesca — Existencias bovinas 2008–2019<br><br>• Superficies y producción 8 cultivos por departamento 2000–2025<br><br>• Dólar histórico oficial y blue 2000–2026<br><br>• Cotizaciones de cultivos al 20/05/2026<br><br>• <a href="https://www.bcr.com.ar" target="_blank" style="color:#185FA5;">Bolsa de Comercio de Rosario</a> · <a href="https://www.mercadoavellaneda.com.ar" target="_blank" style="color:#185FA5;">Mercado Avellaneda-Reconquista</a></div>`}
+    ],
+    ini:()=>setTimeout(updP,150),
+    tab:(i)=>{
+      if(i===0)setTimeout(updP,150);
+      if(i===2)setTimeout(chartDolar,150);
+    }
+  },
+  otr:{t:'Eje 10 — Otros Temas',d:'Contenidos adicionales a definir con el equipo territorial del norte santafesino.',
+    tabs:[{l:'En construcción',h:`<div class="info" style="font-size:14px;">Esta sección se irá definiendo a medida que surjan demandas y acuerdos con los actores territoriales: municipios, cooperativas, entidades de productores y universidades.</div>`}]
+  }
+};
+</script>
+</body>
+</html>
